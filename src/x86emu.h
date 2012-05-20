@@ -85,6 +85,10 @@ struct x86opcodefamily {
   x86opcodeproc procfx;
   //data for the instruction function
   union {
+    //when no data is needed
+    struct {
+      
+    } nodata;
     //data for unsupported instructions
     struct {
       const char* op_str;
@@ -98,6 +102,8 @@ struct x86opcodefamily {
       x86opcodeproc_alu procalufx;
       //does the OP depend of the carry flag?
       uint32_t C;
+      //does the OP modify its result operand?
+      uint32_t M;
       //width bit (0 = 8-bit, 1 = 32-bit)
       uint32_t W;
       //direction bit (0 = op1 is source, 1 = op1 is destination)
@@ -112,12 +118,45 @@ struct x86opcodefamily {
       //function to run to perform the B1 op
       x86register opd;
     } b1;
-    //data for jrc8 instrictions
+    //data for jrc8 instructions
     //these are Jump Relative Condition 8-bit instructions
     struct {
       //cond is a string that describes the condition in terms of flags
       const char* cond;
     } jrc8;
+    //data for GRP1 instructions
+    struct {
+      //width of the operand (0 = 8-bit, 1 = 32-bit)
+      uint32_t W;
+      //width of the immediate (0 = 8-bit, 1 = 32-bit)
+      uint32_t WI;
+    } grp1;
+    //data for general-register xchg operation
+    //xchg with EAX is a B1-group instruction
+    struct {
+      //width of the operand (0 = 8-bit, 1 = 32-bit)
+      uint32_t W;
+    } xchg;
+    //data for general-register mov operation
+    //MOV immediate is a B1-group instruction
+    struct {
+      //width bit (0 = 8-bit, 1 = 32-bit)
+      uint32_t W;
+      //direction bit (0 = op1 is source, 1 = op1 is destination)
+      uint32_t D;
+    } mov;
+    //data for GRP2 instructions
+    struct {
+      //width of the operand (0 = 8-bit, 1 = 32-bit)
+      uint32_t W;
+      //second operand (0 = constant 1, 1 = CL)
+      uint32_t CL;
+    } grp2;
+    //data for jmp instruction
+    struct {
+      //width of the operand (0 = 8-bit, 1 = 32-bit)
+      uint32_t W;
+    } jmp;
   } data;
 };
 
