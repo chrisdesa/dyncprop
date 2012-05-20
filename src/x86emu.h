@@ -67,12 +67,12 @@ typedef struct x86state {
 
 
 typedef struct x86modrm {
-  //operand 1 (register)
-  x86register opd1;
-  //operand 2 (either a register, or a memory access with a register and an offset)
-  x86register opd2_reg; //REG_NONE if memory access
-  int32_t opd2_displacement;  //the displacement value
-  x86address opd2_address; //ADDR_NONE if register value
+  //operand 1 (either a register, or a memory access with a register and an offset)
+  x86register opd1_reg; //REG_NONE if memory access
+  int32_t opd1_displacement;  //the displacement value
+  x86address opd1_address; //ADDR_NONE if register value
+  //operand 2 (register)
+  x86register opd2;
 } x86modrm;
 
 typedef struct x86opcodefamily x86opcodefamily;
@@ -80,7 +80,7 @@ typedef struct x86opcodefamily x86opcodefamily;
 typedef void (*x86opcodeproc)(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 typedef int32_t (*x86opcodeproc_alu)(int32_t a, int32_t b, x86flags* pflags);
 
-typedef struct x86opcodefamily {
+struct x86opcodefamily {
   //processing function
   x86opcodeproc procfx;
   //data for the instruction function
@@ -112,8 +112,14 @@ typedef struct x86opcodefamily {
       //function to run to perform the B1 op
       x86register opd;
     } b1;
+    //data for jrc8 instrictions
+    //these are Jump Relative Condition 8-bit instructions
+    struct {
+      //cond is a string that describes the condition in terms of flags
+      const char* cond;
+    } jrc8;
   } data;
-} x86opcodefamily;
+};
 
 extern x86opcodefamily opc_families[256];
 

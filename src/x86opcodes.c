@@ -20,6 +20,8 @@ void opcproc_dec(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 void opcproc_push(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 void opcproc_pop(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 
+void opcproc_jrc8(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+
 
 #define OPCF_UNSUPPORTED(opstr,msg) {opcproc_unsupported, { .unsupported = {opstr,msg}}}
 
@@ -38,6 +40,8 @@ void opcproc_pop(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
                     {opcproc_ ## op, { .b1 = { REG_EBP }}}, \
                     {opcproc_ ## op, { .b1 = { REG_ESI }}}, \
                     {opcproc_ ## op, { .b1 = { REG_EDI }}}
+                    
+#define OPCF_JRC8(cond) {opcproc_jrc8, { .jrc8 = { cond }}}
 
 x86opcodefamily opc_families[256] = {
   OPCF_ALU(add,0),
@@ -98,7 +102,23 @@ x86opcodefamily opc_families[256] = {
   OPCF_UNSUPPORTED("[6E]","instruction not in original i386 ISA"),
   OPCF_UNSUPPORTED("[6F]","instruction not in original i386 ISA"),
   
+  OPCF_JRC8("o"),
+  OPCF_JRC8("!o"),
+  OPCF_JRC8("c"),
+  OPCF_JRC8("!c"),
+  OPCF_JRC8("z"),
+  OPCF_JRC8("!z"),
+  OPCF_JRC8("&cz"),
+  OPCF_JRC8("&!c!z"),
   
+  OPCF_JRC8("s"),
+  OPCF_JRC8("!s"),
+  OPCF_JRC8("p"),
+  OPCF_JRC8("!p"),
+  OPCF_JRC8("!&!&!so!&!os"),
+  OPCF_JRC8("&!&!so!&!os"),
+  OPCF_JRC8("!&!z!&!&!so!&!os"),
+  OPCF_JRC8("&!z&!&!so!&!os"),
 };
 
 #undef OPCF_UNSUPPORTED
@@ -174,3 +194,11 @@ void opcproc_pop(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
   
 }
+
+void opcproc_jrc8(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+{
+
+}
+
+
+

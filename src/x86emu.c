@@ -21,7 +21,7 @@ void x86step(x86state* ps)
       uint32_t displacement;
       switch(mod) {
         case 0:
-          if(rm == 0b0110) {
+          if(rm == 6 /*0b0110*/) {
             //immediate (32-bit) displacement is address
             displacement = readimm32(ip);
             ip += 4;
@@ -57,46 +57,46 @@ void x86proc_modrm(x86state* ps, x86modrm* pmodrm)
 {
   const uint8_t opc = *(ps->ip++);
   //split into mod, reg, and rm fields
-  uint8_t mod = (opc >> 6) & 0b011;
-  uint8_t reg = (opc >> 3) & 0b0111;
-  uint8_t rm  = (opc >> 0) & 0b0111;
+  uint8_t mod = (opc >> 6) & 3 /*0b011*/;
+  uint8_t reg = (opc >> 3) & 7 /*0b0111*/;
+  uint8_t rm  = (opc >> 0) & 7 /*0b0111*/;
   //parse reg field (first operand)
-  pmodrm->opd1 = (x86register)reg;
+  pmodrm->opd2 = (x86register)reg;
   //look at mod field
   switch(mod) {
-    case 0b00:
-      if(rm == 0b110) {
+    case 0:
+      if(rm == 6 /*0b110*/) {
         //displacement is address
-        pmodrm->opd2_reg = REG_NONE;
-        pmodrm->opd2_displacement = (int32_t)readimm32(ps->ip); ps->ip += 4;
-        pmodrm->opd2_address = ADDR_DISP;
+        pmodrm->opd1_reg = REG_NONE;
+        pmodrm->opd1_displacement = (int32_t)readimm32(ps->ip); ps->ip += 4;
+        pmodrm->opd1_address = ADDR_DISP;
       }
       else {
         //no displacement
-        pmodrm->opd2_reg = REG_NONE;
-        pmodrm->opd2_displacement = 0;
-        pmodrm->opd2_address = (x86address)rm;
+        pmodrm->opd1_reg = REG_NONE;
+        pmodrm->opd1_displacement = 0;
+        pmodrm->opd1_address = (x86address)rm;
       }
       break;
-    case 0b01:
+    case 1:
       //8-bit displacement
-      pmodrm->opd2_reg = REG_NONE;
-      pmodrm->opd2_displacement = (int32_t)((int8_t)readimm8(ps->ip)); ps->ip += 1;
-      pmodrm->opd2_address = (x86address)rm;
+      pmodrm->opd1_reg = REG_NONE;
+      pmodrm->opd1_displacement = (int32_t)((int8_t)readimm8(ps->ip)); ps->ip += 1;
+      pmodrm->opd1_address = (x86address)rm;
       break;
       
-    case 0b10:
+    case 2:
       //32-bit displacement
-      pmodrm->opd2_reg = REG_NONE;
-      pmodrm->opd2_displacement = (int32_t)readimm32(ps->ip); ps->ip += 4;
-      pmodrm->opd2_address = (x86address)rm;
+      pmodrm->opd1_reg = REG_NONE;
+      pmodrm->opd1_displacement = (int32_t)readimm32(ps->ip); ps->ip += 4;
+      pmodrm->opd1_address = (x86address)rm;
       break;
       
-    case 0b11:
+    case 3:
       //register operand
-      pmodrm->opd2_reg = (x86register)rm;
-      pmodrm->opd2_displacement = 0; //shouldn't be used
-      pmodrm->opd2_address = ADDR_NONE;
+      pmodrm->opd1_reg = (x86register)rm;
+      pmodrm->opd1_displacement = 0; //shouldn't be used
+      pmodrm->opd1_address = ADDR_NONE;
       break;
   }
   //modrm field fully decoded
