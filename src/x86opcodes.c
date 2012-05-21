@@ -3,17 +3,19 @@
 
 #include "x86emu.h"
 
+// on function call, return value is in EAX
+
 void opcproc_unsupported(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 
 void opcproc_alu(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
-int32_t opcprocalu_add(int32_t a, int32_t b, x86flags* pflags);
-int32_t opcprocalu_or(int32_t a, int32_t b, x86flags* pflags);
-int32_t opcprocalu_adc(int32_t a, int32_t b, x86flags* pflags);
-int32_t opcprocalu_sbb(int32_t a, int32_t b, x86flags* pflags);
-int32_t opcprocalu_and(int32_t a, int32_t b, x86flags* pflags);
-int32_t opcprocalu_sub(int32_t a, int32_t b, x86flags* pflags);
-int32_t opcprocalu_xor(int32_t a, int32_t b, x86flags* pflags);
-int32_t opcprocalu_cmp(int32_t a, int32_t b, x86flags* pflags);
+int32_t opcprocalu_add(int32_t a, int32_t b, x86state* ps);
+int32_t opcprocalu_or(int32_t a, int32_t b, x86state* ps);
+int32_t opcprocalu_adc(int32_t a, int32_t b, x86state* ps);
+int32_t opcprocalu_sbb(int32_t a, int32_t b, x86state* ps);
+int32_t opcprocalu_and(int32_t a, int32_t b, x86state* ps);
+int32_t opcprocalu_sub(int32_t a, int32_t b, x86state* ps);
+int32_t opcprocalu_xor(int32_t a, int32_t b, x86state* ps);
+int32_t opcprocalu_cmp(int32_t a, int32_t b, x86state* ps);
 
 void opcproc_inc(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 void opcproc_dec(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
@@ -305,42 +307,42 @@ void opcproc_alu(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
   
 }
 
-int32_t opcprocalu_add(int32_t a, int32_t b, x86flags* pflags)
+int32_t opcprocalu_add(int32_t a, int32_t b, x86state* ps)
 {
   
 }
 
-int32_t opcprocalu_or(int32_t a, int32_t b, x86flags* pflags)
+int32_t opcprocalu_or(int32_t a, int32_t b, x86state* ps)
 {
   
 }
 
-int32_t opcprocalu_adc(int32_t a, int32_t b, x86flags* pflags)
+int32_t opcprocalu_adc(int32_t a, int32_t b, x86state* ps)
 {
   
 }
 
-int32_t opcprocalu_sbb(int32_t a, int32_t b, x86flags* pflags)
+int32_t opcprocalu_sbb(int32_t a, int32_t b, x86state* ps)
 {
   
 }
 
-int32_t opcprocalu_and(int32_t a, int32_t b, x86flags* pflags)
+int32_t opcprocalu_and(int32_t a, int32_t b, x86state* ps)
 {
   
 }
 
-int32_t opcprocalu_sub(int32_t a, int32_t b, x86flags* pflags)
+int32_t opcprocalu_sub(int32_t a, int32_t b, x86state* ps)
 {
   
 }
 
-int32_t opcprocalu_xor(int32_t a, int32_t b, x86flags* pflags)
+int32_t opcprocalu_xor(int32_t a, int32_t b, x86state* ps)
 {
   
 }
 
-int32_t opcprocalu_cmp(int32_t a, int32_t b, x86flags* pflags)
+int32_t opcprocalu_cmp(int32_t a, int32_t b, x86state* ps)
 {
   
 }

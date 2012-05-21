@@ -1,6 +1,9 @@
 
 #include <stdint.h>
 
+//emission maximum is 16kB of code
+#define EMIT_MAX (16*1024)
+
 typedef enum x86register {
   //general purpose registers
   REG_EAX = 0,
@@ -37,32 +40,49 @@ typedef enum x86address {
   ADDR_NONE = -1
 } x86address;
 
+typedef enum x86flag {
+  FLAG_C = 0,
+  FLAG_P = 2,
+  FLAG_A = 4,
+  PLAG_Z = 6,
+  FLAG_S = 7,
+  FLAG_O = 11,
+  FLAG_ENUM_MAX = 16
+} x86flag;
+
+typedef enum x86datastate {
+  DS_UNINITIALIZED = 0,
+  DS_REAL = 1,
+  DS_SYMBOLIC = 2,
+  DS_STACK_PTR = 3,
+  DS_RET_ADDR = 4
+} x86datastate;
+
 typedef struct x86data {
+  x86datastate state;
   int32_t value;
-  enum {
-    uninitialized = 0,
-    real = 1,
-    symbolic = 2
-  } state;
 } x86data;
 
-//all the supported x86 flags
-typedef struct x86flags {
-  x86register c; //carry
-  x86register p; //parity
-  x86register a; //adjust
-  x86register z; //zero
-  x86register s; //sign
-  x86register o; //overflow
-} x86flags;
+x86data x86data_uninitialized();
+x86data x86data_real(int32_t v);
+x86data x86data_symbolic();
+x86data x86data_stack_ptr(int32_t v);
+x86data x86data_ret_addr();
 
 typedef struct x86state {
   //general purpose registers
   x86data regs[8];
   //flags
-  x86flags flags;
+  x86data flags[16];
   //instruction pointer
   const uint8_t* ip;
+  //stack
+  x86data* pstack;
+  uint32_t stacksz;
+  //emission pointer and emission buffer size
+  uint8_t* emitbuf;
+  uint32_t emitidx;
+  uint32_t emitsz;
 } x86state;
 
 
@@ -78,7 +98,7 @@ typedef struct x86modrm {
 typedef struct x86opcodefamily x86opcodefamily;
 
 typedef void (*x86opcodeproc)(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
-typedef int32_t (*x86opcodeproc_alu)(int32_t a, int32_t b, x86flags* pflags);
+typedef int32_t (*x86opcodeproc_alu)(int32_t a, int32_t b, x86state* ps);
 
 struct x86opcodefamily {
   //processing function
@@ -162,7 +182,11 @@ struct x86opcodefamily {
 
 extern x86opcodefamily opc_families[256];
 
-void x86step(x86state* ps);
+
+
+int x86step(x86state* ps);
 
 void x86proc_modrm(x86state* ps, x86modrm* pmodrm);
+
+void x86emit(x86state* ps, const uint8_t* instr, uint32_t len);
 
