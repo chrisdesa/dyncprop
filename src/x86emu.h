@@ -4,6 +4,9 @@
 //emission maximum is 16kB of code
 #define EMIT_MAX (16*1024)
 
+//stack max is 64KB of stack
+#define STACK_MAX (16*1024)
+
 typedef enum x86register {
   //general purpose registers
   REG_EAX = 0,
@@ -22,24 +25,6 @@ typedef enum x86register {
   REG_NONE = -1
 } x86register;
 
-typedef enum x86address {
-  //r/m operand modes
-  ADDR_BX_SI_DISP = 0,
-  ADDR_BX_DI_DISP = 1,
-  ADDR_BP_SI_DISP = 2,
-  ADDR_BP_DI_DISP = 3,
-  ADDR_SI_DISP = 4,
-  ADDR_DI_DISP = 5,
-  ADDR_BP_DISP = 6,
-  ADDR_BX_DISP = 7,
-  //extra mode for when mod = 00, r/m = 110 (absolute addressing)
-  ADDR_DISP = 8,
-  //maximum value of enum
-  ADDR_ENUM_MAX = 9,
-  //no address
-  ADDR_NONE = -1
-} x86address;
-
 typedef enum x86flag {
   FLAG_C = 0,
   FLAG_P = 2,
@@ -55,7 +40,8 @@ typedef enum x86datastate {
   DS_REAL = 1,
   DS_SYMBOLIC = 2,
   DS_STACK_PTR = 3,
-  DS_RET_ADDR = 4
+  DS_RET_ADDR = 4,  //return address
+  DS_RET_BP = 5, //initial value of BP
 } x86datastate;
 
 typedef struct x86data {
@@ -63,11 +49,7 @@ typedef struct x86data {
   int32_t value;
 } x86data;
 
-x86data x86data_uninitialized();
-x86data x86data_real(int32_t v);
-x86data x86data_symbolic();
-x86data x86data_stack_ptr(int32_t v);
-x86data x86data_ret_addr();
+x86data x86data_init(x86datastate state, int32_t value);
 
 typedef struct x86state {
   //general purpose registers
@@ -90,14 +72,14 @@ typedef struct x86modrm {
   //operand 1 (either a register, or a memory access with a register and an offset)
   x86register opd1_reg; //REG_NONE if memory access
   int32_t opd1_displacement;  //the displacement value
-  x86address opd1_address; //ADDR_NONE if register value
+  x86register opd1_address; //ADDR_NONE if only displacement
   //operand 2 (register)
   x86register opd2;
 } x86modrm;
 
 typedef struct x86opcodefamily x86opcodefamily;
 
-typedef void (*x86opcodeproc)(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+typedef int (*x86opcodeproc)(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 typedef int32_t (*x86opcodeproc_alu)(int32_t a, int32_t b, x86state* ps);
 
 struct x86opcodefamily {
@@ -189,4 +171,16 @@ int x86step(x86state* ps);
 void x86proc_modrm(x86state* ps, x86modrm* pmodrm);
 
 void x86emit(x86state* ps, const uint8_t* instr, uint32_t len);
+void x86emit1(x86state* ps, uint8_t instr);
 
+void x86stack_write32(x86state* ps, int32_t addr, x86data value);
+x86data x86stack_read32(x86state* ps, int32_t addr);
+x86data* x86stack_access32(x86state* ps, int32_t addr);
+
+int issymbolic(x86datastate ds);
+int isreal(x86datastate ds);
+
+const char* x86datastate_tostr(x86datastate ds);
+const char* x86register_tostr(x86register reg);
+
+x86data x86make_address(x86state* ps, x86register addr, int32_t offset);

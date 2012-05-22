@@ -5,9 +5,9 @@
 
 // on function call, return value is in EAX
 
-void opcproc_unsupported(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_unsupported(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 
-void opcproc_alu(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_alu(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 int32_t opcprocalu_add(int32_t a, int32_t b, x86state* ps);
 int32_t opcprocalu_or(int32_t a, int32_t b, x86state* ps);
 int32_t opcprocalu_adc(int32_t a, int32_t b, x86state* ps);
@@ -17,45 +17,45 @@ int32_t opcprocalu_sub(int32_t a, int32_t b, x86state* ps);
 int32_t opcprocalu_xor(int32_t a, int32_t b, x86state* ps);
 int32_t opcprocalu_cmp(int32_t a, int32_t b, x86state* ps);
 
-void opcproc_inc(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
-void opcproc_dec(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
-void opcproc_push(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
-void opcproc_pop(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
-void opcproc_xchgAX(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_inc(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_dec(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_push(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_pop(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_xchgAX(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 
-void opcproc_jrc8(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_jrc8(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 
-void opcproc_grp1(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
-void opcproc_grp2(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_grp1(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_grp2(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 
-void opcproc_xchg(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_xchg(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 
-void opcproc_pop_general(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_pop_general(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 
-void opcproc_mov(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_mov(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 
-void opcproc_call(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_call(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 
-void opcproc_pushf(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
-void opcproc_popf(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
-void opcproc_sahf(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
-void opcproc_lahf(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_pushf(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_popf(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_sahf(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_lahf(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 
-void opcproc_mov_general_imm8(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
-void opcproc_mov_general_imm32(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_mov_general_imm8(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_mov_general_imm32(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 
-void opcproc_ret_imm32(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
-void opcproc_ret(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_ret_imm32(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_ret(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 
-void opcproc_jmp(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_jmp(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 
-void opcproc_mov_imm8(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
-void opcproc_mov_imm32(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_mov_imm8(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_mov_imm32(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 
 //complement/clear/set carry flag
-void opcproc_cmc(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
-void opcproc_clc(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
-void opcproc_stc(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_cmc(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_clc(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
+int opcproc_stc(x86state* ps, x86opcodefamily* popcf, uint8_t opc);
 
 #define OPCF_UNSUPPORTED(opstr,msg) {opcproc_unsupported, { .unsupported = {opstr,msg}}}
 
@@ -297,183 +297,302 @@ x86opcodefamily opc_families[256] = {
 #undef OPCF_B1
 #undef OPCF_JRC8
 
-void opcproc_unsupported(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_unsupported(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Error on instruction [%02X] => %s\n", opc, popcf->data.unsupported.op_str);
+  fprintf(stderr, "  %s\n", popcf->data.unsupported.msg);
+  exit(1);
 }
 
-void opcproc_alu(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_alu(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  //make sure it's a 4-byte operation
+  if(popcf->data.mov.W != 1) {
+    fprintf(stderr, "Error: Byte add instruction not supported (%s:%d).\n",__FILE__,__LINE__);
+    exit(1);
+  }
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
 int32_t opcprocalu_add(int32_t a, int32_t b, x86state* ps)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
 int32_t opcprocalu_or(int32_t a, int32_t b, x86state* ps)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
 int32_t opcprocalu_adc(int32_t a, int32_t b, x86state* ps)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
 int32_t opcprocalu_sbb(int32_t a, int32_t b, x86state* ps)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
 int32_t opcprocalu_and(int32_t a, int32_t b, x86state* ps)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
 int32_t opcprocalu_sub(int32_t a, int32_t b, x86state* ps)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
 int32_t opcprocalu_xor(int32_t a, int32_t b, x86state* ps)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
 int32_t opcprocalu_cmp(int32_t a, int32_t b, x86state* ps)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_inc(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_inc(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_dec(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_dec(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_push(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_push(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  //verify that the stack pointer actually does point to the stack
+  if(ps->regs[REG_ESP].state != DS_STACK_PTR) {
+    fprintf(stderr,"Error: On push, stack pointer did not point to stack.\n");
+    exit(1);
+  }
+  //modify the stack pointer
+  ps->regs[REG_ESP].value -= 4;
+  //get the register that is being operated on
+  x86register opd = popcf->data.b1.opd;
+  //do the memory write
+  x86stack_write32(ps, ps->regs[REG_ESP].value, ps->regs[opd]);
+  //to keep the stack pointer where it is in the original code, we always
+  //emit a push.  In this case, this is always the existing instruction.
+  x86emit(ps, &opc, 1);
+  //return
+  return 0;
 }
 
-void opcproc_pop(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_pop(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_jrc8(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_jrc8(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_grp1(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_grp1(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_xchg(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_xchg(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_mov(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_mov(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  //make sure it's a 4-byte operation
+  if(popcf->data.mov.W != 1) {
+    fprintf(stderr, "Error: Byte mov instruction not supported (%s:%d).\n",__FILE__,__LINE__);
+    exit(1);
+  }
+  //we first need to parse the ModR/M byte
+  const uint8_t* pinstr = ps->ip - 1;
+  x86modrm modrm;
+  x86proc_modrm(ps, &modrm);
+  //check for kind of first operand
+  if(modrm.opd1_reg != REG_NONE) {
+    x86register reg_src, reg_dst;
+    if(popcf->data.mov.D) {
+      reg_dst = modrm.opd1_reg;
+      reg_src = modrm.opd2;
+    }
+    else {
+      reg_dst = modrm.opd2;
+      reg_src = modrm.opd1_reg;
+    }
+    if(issymbolic(ps->regs[reg_src].state)) {
+      //we have to emit the instruction
+      uint8_t ee[2];
+      ee[0] = opc;
+      //remake the modrm byte
+      ee[1] = (3 << 6) | (modrm.opd2 << 3) | (modrm.opd1_reg);
+      x86emit(ps, ee, 2);
+    }
+    //assign the memory
+    ps->regs[reg_src] = ps->regs[reg_dst];
+  }
+  else {
+    if(popcf->data.mov.D == 0) {
+      //this is a store
+      fprintf(stderr, "Error: Stores not supported (%s:%d).\n",__FILE__,__LINE__);
+      exit(1);
+    }
+    else {
+      //this is a load; get the address
+      x86data daddr = x86make_address(ps, modrm.opd1_address, modrm.opd1_displacement);
+      switch(daddr.state) {
+        case DS_REAL:
+          fprintf(stderr, "Error: Real reads not supported (%s:%d).\n",__FILE__,__LINE__);
+          exit(1);
+          break;
+        case DS_STACK_PTR:
+          //do the read
+          ps->regs[modrm.opd2] = x86stack_read32(ps, daddr.value);
+          if(issymbolic(ps->regs[modrm.opd2].state)) {
+            //we actually have to emit the load, since it was symbolic
+            x86emit(ps, pinstr, ps->ip - pinstr);
+          }
+          break;
+        case DS_SYMBOLIC:
+          fprintf(stderr, "Error: Symbolic reads not supported (%s:%d).\n",__FILE__,__LINE__);
+          exit(1);
+          break;
+        default:
+          fprintf(stderr, "Error: Unrecognized address state (%s:%d).\n",__FILE__,__LINE__);
+          exit(1);
+      }
+    }
+  }
+  //return
+  return 0;
 }
 
 //pop a general operand (POP Ev)
-void opcproc_pop_general(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_pop_general(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_call(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_call(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_pushf(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_pushf(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_popf(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_popf(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_sahf(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_sahf(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_lahf(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_lahf(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_xchgAX(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_xchgAX(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_mov_imm8(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_mov_imm8(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_mov_imm32(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_mov_imm32(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_ret_imm32(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_ret_imm32(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_ret(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_ret(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_grp2(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_grp2(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_jmp(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_jmp(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_mov_general_imm8(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_mov_general_imm8(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_mov_general_imm32(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_mov_general_imm32(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_cmc(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_cmc(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_clc(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_clc(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }
 
-void opcproc_stc(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
+int opcproc_stc(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  
+  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
+  exit(1);
 }

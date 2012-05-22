@@ -3,8 +3,11 @@
  * dynamic constant propagation function
  * 
  * the format string determines the arguments of the function:
- *   $x => a symbolic argument
- *   %x => a real argument (with value passed as a vararg)
+ *   X (capital) => a symbolic argument
+ *   x (lowercase) => a real argument (with value passed as a vararg)
+ * 
+ * the length of the string is the number of 4-byte arguments of the function
+ * (only 4-byte arguments will be supported at this time)
  * 
  * possible values for x:
  *   u, d => integer (signed or unsigned) [4 bytes]

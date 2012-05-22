@@ -9,6 +9,9 @@ bin:
 obj:
 	mkdir obj
 
+clean:
+	rm obj/* bin/*
+
 bin/main: obj/main.o obj/x86emu.o obj/x86opcodes.o obj/dyncprop.o
 	gcc $(LFLAGS) $^ -o $@
 
