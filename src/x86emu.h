@@ -29,7 +29,7 @@ typedef enum x86flag {
   FLAG_C = 0,
   FLAG_P = 2,
   FLAG_A = 4,
-  PLAG_Z = 6,
+  FLAG_Z = 6,
   FLAG_S = 7,
   FLAG_O = 11,
   FLAG_ENUM_MAX = 16
