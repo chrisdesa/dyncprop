@@ -29,14 +29,14 @@ void* dyncprop(void* pfn, const char* format, ...)
       case 'D':
       case 'P':
         //symbolic 4-byte argument
-        x86stack_write32(&s, -4*(ia+1), x86data_init(DS_SYMBOLIC,0));
+        x86stack_write32(&s, -4*(nargs-ia), x86data_init(DS_SYMBOLIC,0));
         break;
         
       case 'u':
       case 'd':
       case 'p':
         //real 4-byte argument
-        x86stack_write32(&s, -4*(ia+1), x86data_init(DS_REAL,va_arg(ap, int)));
+        x86stack_write32(&s, -4*(nargs-ia), x86data_init(DS_REAL,va_arg(ap, int)));
         break;
         
       case 'f':

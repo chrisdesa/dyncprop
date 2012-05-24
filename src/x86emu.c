@@ -82,11 +82,15 @@ void x86emit(x86state* ps, const uint8_t* instr, uint32_t len)
     fprintf(stderr, "Error: Emitted instructions exceeeded emission maximum.\n");
     exit(1);
   }
-  
-  fprintf(stderr, "\033[36m[emit]\033[0m:");
+  fprintf(stderr, "\033[36m");
+  fprintf(stderr, ".byte ");
   for(i = 0; i < len; i++) {
-    fprintf(stderr, " %02X", instr[i]);
+    if(i != 0) {
+      fprintf(stderr, ", ");
+    }
+    fprintf(stderr, "0x%02X", instr[i]);
   }
+  fprintf(stderr, "\033[0m");
   fprintf(stderr, "\n");
 }
 
@@ -138,19 +142,19 @@ x86data* x86stack_access32(x86state* ps, int32_t addr)
 {
   //make sure this address isn't above the stack
   if(addr >= 0) {
-    fprintf(stderr, "Error: Stack write out-of-bounds.\n");
+    fprintf(stderr, "Error: Stack access at address [%d] out-of-bounds.\n", addr);
     exit(1);
   }
   //check alignment
   if((addr & 3) != 0) {
-    fprintf(stderr, "Error: Tried to write 32-bit value to stack at unaligned address.\n");
+    fprintf(stderr, "Error: Tried to access 32-bit value to stack at unaligned address.\n");
     exit(1);
   }
   //get index
   uint32_t index = 1+(-addr/4);
   //make sure stack hasn't grown too large
   if(index >= STACK_MAX) {
-    fprintf(stderr, "Error: Stack write exceeds maximum stack size.\n");
+    fprintf(stderr, "Error: Stack access exceeds maximum stack size.\n");
     exit(1);
   }    
   //potentially expand the stack

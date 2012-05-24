@@ -307,18 +307,207 @@ int opcproc_unsupported(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 int opcproc_alu(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
   //make sure it's a 4-byte operation
-  if(popcf->data.mov.W != 1) {
-    fprintf(stderr, "Error: Byte add instruction not supported (%s:%d).\n",__FILE__,__LINE__);
+  if(popcf->data.alu.W != 1) {
+    fprintf(stderr, "Error: Byte alu instructions not supported (%s:%d).\n",__FILE__,__LINE__);
     exit(1);
   }
-  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
-  exit(1);
+  //in the case of an immediate operation
+  if(popcf->data.alu.IMM != 0) {
+    fprintf(stderr, "Error: Immediate alu instructions not supported (%s:%d).\n",__FILE__,__LINE__);
+    exit(1);
+  }
+  //we first need to parse the ModR/M byte
+  const uint8_t* pinstr = ps->ip - 1;
+  x86modrm modrm;
+  x86proc_modrm(ps, &modrm);
+  //check for kind of first operand
+  if(modrm.opd1_reg != REG_NONE) {
+    x86register reg_src, reg_dst;
+    if(popcf->data.mov.D == 0) {
+      reg_dst = modrm.opd1_reg;
+      reg_src = modrm.opd2;
+    }
+    else {
+      reg_dst = modrm.opd2;
+      reg_src = modrm.opd1_reg;
+    }
+    x86datastate rs_src, rs_dst, fs_c;
+    rs_src = ps->regs[reg_src].state;
+    rs_dst = ps->regs[reg_dst].state;
+    if(popcf->data.alu.C == 0) {
+      //if the op doesn't depend on the carry flag, act like it's real
+      fs_c = DS_REAL;
+    }
+    else {
+      //otherwise, we get the state of the carry flag
+      fs_c = ps->flags[FLAG_C].state;
+    }
+    if((rs_src == DS_REAL)&&(rs_dst == DS_REAL)&&(fs_c == DS_REAL)) {
+      //all operands are real; we don't need to emit anything
+      int32_t r = popcf->data.alu.procalufx(ps->regs[reg_dst].value, ps->regs[reg_src].value, ps);
+      ps->regs[reg_dst].state = DS_REAL;
+      ps->regs[reg_dst].value = r;
+    }
+    else {
+      //we need to emit
+      if(rs_src == DS_REAL) {
+        //first setup the source register
+        uint8_t ee[5];
+        uint32_t v = ps->regs[reg_src].value;
+        ee[0] = 0xB8 + reg_src;
+        ee[1] = ((v >> 0) & 0xFF);
+        ee[2] = ((v >> 8) & 0xFF);
+        ee[3] = ((v >> 16) & 0xFF);
+        ee[4] = ((v >> 24) & 0xFF);
+        x86emit(ps, ee, 5);
+      }
+      if((rs_dst == DS_REAL)&&(reg_src != reg_dst)) {
+        //we now need to set up the destination register
+        uint8_t ee[5];
+        uint32_t v = ps->regs[reg_dst].value;
+        ee[0] = 0xB8 + reg_dst;
+        ee[1] = ((v >> 0) & 0xFF);
+        ee[2] = ((v >> 8) & 0xFF);
+        ee[3] = ((v >> 16) & 0xFF);
+        ee[4] = ((v >> 24) & 0xFF);
+        x86emit(ps, ee, 5);
+      }
+      if((fs_c == DS_REAL)&&(popcf->data.alu.C)) {
+        //we need to initialize the carry flag
+        if(ps->flags[FLAG_C].value) {
+          x86emit1(ps, 0xF9); //set carry flag
+        }
+        else {
+          x86emit1(ps, 0xF8); //clear carry flag
+        }
+      }
+      //now emit the original instruction
+      x86emit(ps, pinstr, ps->ip - pinstr);
+      //finally, do the assignment in our model
+      if(((rs_dst == DS_STACK_PTR)&&(rs_src == DS_REAL))||((rs_dst == DS_REAL)&&(rs_src == DS_STACK_PTR))) {
+        if((popcf->data.alu.procalufx == opcprocalu_add)||(popcf->data.alu.procalufx == opcprocalu_sub)) {
+          //this still acts like a real op, even though we had to do an emit
+          int32_t r = popcf->data.alu.procalufx(ps->regs[reg_dst].value, ps->regs[reg_src].value, ps);
+          ps->regs[reg_dst].value = r;
+          ps->regs[reg_dst].state = DS_STACK_PTR;
+        }
+        else {
+          fprintf(stderr, "Error: Invalid alu operation on stack pointer (%s:%d).\n",__FILE__,__LINE__);
+          exit(1);
+        }
+      }
+      else {
+        ps->regs[reg_dst].value = 0;
+        ps->regs[reg_dst].state = DS_SYMBOLIC;
+        //all alu ops write all flags
+        ps->flags[FLAG_C] = x86data_init(DS_SYMBOLIC,0);
+        ps->flags[FLAG_P] = x86data_init(DS_SYMBOLIC,0);
+        ps->flags[FLAG_A] = x86data_init(DS_SYMBOLIC,0);
+        ps->flags[FLAG_Z] = x86data_init(DS_SYMBOLIC,0);
+        ps->flags[FLAG_S] = x86data_init(DS_SYMBOLIC,0);
+        ps->flags[FLAG_O] = x86data_init(DS_SYMBOLIC,0);
+      }
+    }
+  }
+  else {
+    if(popcf->data.alu.D == 0) {
+      //this is a store
+      fprintf(stderr, "Error: ALU stores not supported (%s:%d).\n",__FILE__,__LINE__);
+      exit(1);
+    }
+    else {
+      //this is a load; get the address
+      x86data daddr = x86make_address(ps, modrm.opd1_address, modrm.opd1_displacement);
+      switch(daddr.state) {
+        case DS_REAL:
+          fprintf(stderr, "Error: Real reads not supported (%s:%d).\n",__FILE__,__LINE__);
+          exit(1);
+          break;
+        case DS_STACK_PTR:
+          {
+            //do the read
+            x86data d_src = x86stack_read32(ps, daddr.value);
+            if(issymbolic(d_src.state)) {
+              //we actually have to emit the operation, since it was symbolic
+              if(ps->regs[modrm.opd2].state == DS_REAL) {
+                //we now need to set up the destination register
+                uint8_t ee[5];
+                uint32_t v = ps->regs[modrm.opd2].value;
+                ee[0] = 0xB8 + modrm.opd2;
+                ee[1] = ((v >> 0) & 0xFF);
+                ee[2] = ((v >> 8) & 0xFF);
+                ee[3] = ((v >> 16) & 0xFF);
+                ee[4] = ((v >> 24) & 0xFF);
+                x86emit(ps, ee, 5);
+              }
+              x86emit(ps, pinstr, ps->ip - pinstr);
+              //set the flags
+              ps->regs[modrm.opd2].state = DS_SYMBOLIC;
+              ps->regs[modrm.opd2].value = 0;
+              //all alu ops write all flags
+              ps->flags[FLAG_C] = x86data_init(DS_SYMBOLIC,0);
+              ps->flags[FLAG_P] = x86data_init(DS_SYMBOLIC,0);
+              ps->flags[FLAG_A] = x86data_init(DS_SYMBOLIC,0);
+              ps->flags[FLAG_Z] = x86data_init(DS_SYMBOLIC,0);
+              ps->flags[FLAG_S] = x86data_init(DS_SYMBOLIC,0);
+              ps->flags[FLAG_O] = x86data_init(DS_SYMBOLIC,0);
+            }
+            else {
+              if(isreal(ps->regs[modrm.opd2].state)) {
+                //all operands are real; no need to emit anything
+                int32_t r = popcf->data.alu.procalufx(d_src.value, ps->regs[modrm.opd2].value, ps);
+                ps->regs[modrm.opd2].state = DS_REAL;
+                ps->regs[modrm.opd2].value = r;
+              }
+              else if(ps->regs[modrm.opd2].state == DS_SYMBOLIC) {
+                //only the destination operand is symbolic
+                uint32_t fcode = (opc >> 3) & 7;
+                uint32_t v = d_src.value;
+                uint8_t ee[6];
+                ee[0] = 0x81; //group1 alu immediate ops
+                ee[1] = modrm.opd2 | (fcode << 3) | (3 << 6);
+                ee[2] = ((v >> 0) & 0xFF);
+                ee[3] = ((v >> 8) & 0xFF);
+                ee[4] = ((v >> 16) & 0xFF);
+                ee[5] = ((v >> 24) & 0xFF);
+                x86emit(ps, ee, 6);        
+                //set the flags
+                ps->regs[modrm.opd2].state = DS_SYMBOLIC;
+                ps->regs[modrm.opd2].value = 0;
+                //all alu ops write all flags
+                ps->flags[FLAG_C] = x86data_init(DS_SYMBOLIC,0);
+                ps->flags[FLAG_P] = x86data_init(DS_SYMBOLIC,0);
+                ps->flags[FLAG_A] = x86data_init(DS_SYMBOLIC,0);
+                ps->flags[FLAG_Z] = x86data_init(DS_SYMBOLIC,0);
+                ps->flags[FLAG_S] = x86data_init(DS_SYMBOLIC,0);
+                ps->flags[FLAG_O] = x86data_init(DS_SYMBOLIC,0);
+              }
+              else {
+                fprintf(stderr, "Error: ALU ops on stack pointers off the stack not supported (%s:%d).\n",__FILE__,__LINE__);
+                exit(1);
+              }
+            }
+          }
+          break;
+        case DS_SYMBOLIC:
+          fprintf(stderr, "Error: Symbolic reads not supported (%s:%d).\n",__FILE__,__LINE__);
+          exit(1);
+          break;
+        default:
+          fprintf(stderr, "Error: Unrecognized address state (%s:%d).\n",__FILE__,__LINE__);
+          exit(1);
+      }
+    }
+  }
+  //return
+  return 0;
 }
 
 int32_t opcprocalu_add(int32_t a, int32_t b, x86state* ps)
 {
-  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
-  exit(1);
+  int32_t rv = a + b;
+  fprintf(stderr, "Warning: on ALU op, flags still not supported.\n",__FILE__,__LINE__);
+  return rv;
 }
 
 int32_t opcprocalu_or(int32_t a, int32_t b, x86state* ps)
@@ -397,8 +586,22 @@ int opcproc_push(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 
 int opcproc_pop(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
-  exit(1);
+  //verify that the stack pointer actually does point to the stack
+  if(ps->regs[REG_ESP].state != DS_STACK_PTR) {
+    fprintf(stderr,"Error: On pop, stack pointer did not point to stack.\n");
+    exit(1);
+  }
+  //get the register that is being operated on
+  x86register opd = popcf->data.b1.opd;
+  //do the memory read
+  ps->regs[opd] = x86stack_read32(ps, ps->regs[REG_ESP].value);
+  //modify the stack pointer
+  ps->regs[REG_ESP].value += 4;
+  //to keep the stack pointer where it is in the original code, we always
+  //emit a pop.  In this case, this is always the existing instruction.
+  x86emit(ps, &opc, 1);
+  //return
+  return 0;
 }
 
 int opcproc_jrc8(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
@@ -433,7 +636,7 @@ int opcproc_mov(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
   //check for kind of first operand
   if(modrm.opd1_reg != REG_NONE) {
     x86register reg_src, reg_dst;
-    if(popcf->data.mov.D) {
+    if(popcf->data.mov.D == 0) {
       reg_dst = modrm.opd1_reg;
       reg_src = modrm.opd2;
     }
@@ -450,7 +653,7 @@ int opcproc_mov(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
       x86emit(ps, ee, 2);
     }
     //assign the memory
-    ps->regs[reg_src] = ps->regs[reg_dst];
+    ps->regs[reg_dst] = ps->regs[reg_src];
   }
   else {
     if(popcf->data.mov.D == 0) {
@@ -551,8 +754,39 @@ int opcproc_ret_imm32(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 
 int opcproc_ret(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
-  exit(1);
+  //verify that the stack pointer actually does point to the stack
+  if(ps->regs[REG_ESP].state != DS_STACK_PTR) {
+    fprintf(stderr,"Error: On return, stack pointer did not point to stack (%s:%d)\n",__FILE__,__LINE__);
+    exit(1);
+  }
+  //do the memory read
+  x86data ret_addr = x86stack_read32(ps, ps->regs[REG_ESP].value);
+  //verify that the return address has the correct state
+  if(ret_addr.state != DS_RET_ADDR) {
+    fprintf(stderr,"Error: On return, stack pointer did not point to return address, but instead had state [%s] (%s:%d)\n",
+            x86datastate_tostr(ret_addr.state),__FILE__,__LINE__);
+    exit(1);
+  }
+  //verify that BP holds the correct value
+  if(ps->regs[REG_EBP].state != DS_RET_BP) {
+    fprintf(stderr,"Error: On return, value of EPB wasn't restored (%s:%d)\n",__FILE__,__LINE__);
+    exit(1);
+  }
+  //if the return value is real, we must set it
+  if(ps->regs[REG_EAX].state == DS_REAL) {
+    uint8_t ee[5];
+    uint32_t v = ps->regs[REG_EAX].value;
+    ee[0] = 0xB8 + REG_EAX;
+    ee[1] = ((v >> 0) & 0xFF);
+    ee[2] = ((v >> 8) & 0xFF);
+    ee[3] = ((v >> 16) & 0xFF);
+    ee[4] = ((v >> 24) & 0xFF);
+    x86emit(ps, ee, 5);
+  }
+  //emit the return
+  x86emit(ps, &opc, 1);
+  //return from the function
+  return 1;
 }
 
 int opcproc_grp2(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
