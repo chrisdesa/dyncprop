@@ -410,8 +410,94 @@ int opcproc_alu(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
     }
   }
   else {
-    fprintf(stderr, "Error: ALU ops in memory not supported (%s:%d).\n",__FILE__,__LINE__);
-    exit(1);
+    if(popcf->data.alu.D == 0) {
+      //this is a store
+      fprintf(stderr, "Error: ALU stores not supported (%s:%d).\n",__FILE__,__LINE__);
+      exit(1);
+    }
+    else {
+      //this is a load; get the address
+      x86data daddr = x86make_address(ps, modrm.opd1_address, modrm.opd1_displacement);
+      switch(daddr.state) {
+        case DS_REAL:
+          fprintf(stderr, "Error: Real reads not supported (%s:%d).\n",__FILE__,__LINE__);
+          exit(1);
+          break;
+        case DS_STACK_PTR:
+          {
+            //do the read
+            x86data d_src = x86stack_read32(ps, daddr.value);
+            if(issymbolic(d_src.state)) {
+              //we actually have to emit the operation, since it was symbolic
+              if(ps->regs[modrm.opd2].state == DS_REAL) {
+                //we now need to set up the destination register
+                uint8_t ee[5];
+                uint32_t v = ps->regs[modrm.opd2].value;
+                ee[0] = 0xB8 + modrm.opd2;
+                ee[1] = ((v >> 0) & 0xFF);
+                ee[2] = ((v >> 8) & 0xFF);
+                ee[3] = ((v >> 16) & 0xFF);
+                ee[4] = ((v >> 24) & 0xFF);
+                x86emit(ps, ee, 5);
+              }
+              x86emit(ps, pinstr, ps->ip - pinstr);
+              //set the flags
+              ps->regs[modrm.opd2].state = DS_SYMBOLIC;
+              ps->regs[modrm.opd2].value = 0;
+              //all alu ops write all flags
+              ps->flags[FLAG_C] = x86data_init(DS_SYMBOLIC,0);
+              ps->flags[FLAG_P] = x86data_init(DS_SYMBOLIC,0);
+              ps->flags[FLAG_A] = x86data_init(DS_SYMBOLIC,0);
+              ps->flags[FLAG_Z] = x86data_init(DS_SYMBOLIC,0);
+              ps->flags[FLAG_S] = x86data_init(DS_SYMBOLIC,0);
+              ps->flags[FLAG_O] = x86data_init(DS_SYMBOLIC,0);
+            }
+            else {
+              if(isreal(ps->regs[modrm.opd2].state)) {
+                //all operands are real; no need to emit anything
+                int32_t r = popcf->data.alu.procalufx(d_src.value, ps->regs[modrm.opd2].value, ps);
+                ps->regs[modrm.opd2].state = DS_REAL;
+                ps->regs[modrm.opd2].value = r;
+              }
+              else if(ps->regs[modrm.opd2].state == DS_SYMBOLIC) {
+                //only the destination operand is symbolic
+                uint32_t fcode = (opc >> 3) & 7;
+                uint32_t v = d_src.value;
+                uint8_t ee[6];
+                ee[0] = 0x81; //group1 alu immediate ops
+                ee[1] = modrm.opd2 | (fcode << 3) | (3 << 6);
+                ee[2] = ((v >> 0) & 0xFF);
+                ee[3] = ((v >> 8) & 0xFF);
+                ee[4] = ((v >> 16) & 0xFF);
+                ee[5] = ((v >> 24) & 0xFF);
+                x86emit(ps, ee, 6);        
+                //set the flags
+                ps->regs[modrm.opd2].state = DS_SYMBOLIC;
+                ps->regs[modrm.opd2].value = 0;
+                //all alu ops write all flags
+                ps->flags[FLAG_C] = x86data_init(DS_SYMBOLIC,0);
+                ps->flags[FLAG_P] = x86data_init(DS_SYMBOLIC,0);
+                ps->flags[FLAG_A] = x86data_init(DS_SYMBOLIC,0);
+                ps->flags[FLAG_Z] = x86data_init(DS_SYMBOLIC,0);
+                ps->flags[FLAG_S] = x86data_init(DS_SYMBOLIC,0);
+                ps->flags[FLAG_O] = x86data_init(DS_SYMBOLIC,0);
+              }
+              else {
+                fprintf(stderr, "Error: ALU ops on stack pointers off the stack not supported (%s:%d).\n",__FILE__,__LINE__);
+                exit(1);
+              }
+            }
+          }
+          break;
+        case DS_SYMBOLIC:
+          fprintf(stderr, "Error: Symbolic reads not supported (%s:%d).\n",__FILE__,__LINE__);
+          exit(1);
+          break;
+        default:
+          fprintf(stderr, "Error: Unrecognized address state (%s:%d).\n",__FILE__,__LINE__);
+          exit(1);
+      }
+    }
   }
   //return
   return 0;
@@ -419,8 +505,9 @@ int opcproc_alu(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 
 int32_t opcprocalu_add(int32_t a, int32_t b, x86state* ps)
 {
-  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
-  exit(1);
+  int32_t rv = a + b;
+  fprintf(stderr, "Warning: on ALU op, flags still not supported.\n",__FILE__,__LINE__);
+  return rv;
 }
 
 int32_t opcprocalu_or(int32_t a, int32_t b, x86state* ps)

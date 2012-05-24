@@ -82,11 +82,15 @@ void x86emit(x86state* ps, const uint8_t* instr, uint32_t len)
     fprintf(stderr, "Error: Emitted instructions exceeeded emission maximum.\n");
     exit(1);
   }
-  
-  fprintf(stderr, "\033[36m[emit]\033[0m:");
+  fprintf(stderr, "\033[36m");
+  fprintf(stderr, ".byte ");
   for(i = 0; i < len; i++) {
-    fprintf(stderr, " %02X", instr[i]);
+    if(i != 0) {
+      fprintf(stderr, ", ");
+    }
+    fprintf(stderr, "0x%02X", instr[i]);
   }
+  fprintf(stderr, "\033[0m");
   fprintf(stderr, "\n");
 }
 
