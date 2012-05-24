@@ -80,7 +80,7 @@ void* dyncprop(void* pfn, const char* format, ...)
   //allocate some memory for the function to be stored at
   uint32_t pagesize = sysconf(_SC_PAGE_SIZE);
   uint32_t npages = (s.emitidx + pagesize - 1) / pagesize;
-  void* rv = mmap(NULL, npages*pagesize, PROT_EXEC | PROT_WRITE | PROT_READ, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  void* rv = mmap(NULL, npages*pagesize, PROT_EXEC | PROT_WRITE | PROT_READ, MAP_PRIVATE | MAP_ANON, -1, 0);
   if(rv == MAP_FAILED) {
     fprintf(stderr,"Error:  Call to mmap failed.\n");
     exit(1);
