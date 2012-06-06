@@ -164,7 +164,9 @@ struct x86opcodefamily {
 
 extern x86opcodefamily opc_families[256];
 
-
+uint8_t readimm8(const uint8_t* ip);
+uint16_t readimm16(const uint8_t* ip);
+uint32_t readimm32(const uint8_t* ip);
 
 int x86step(x86state* ps);
 

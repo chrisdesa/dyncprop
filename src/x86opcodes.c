@@ -612,8 +612,86 @@ int opcproc_jrc8(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 
 int opcproc_grp1(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
 {
-  fprintf(stderr, "Unimplemented instruction (%s:%d)\n",__FILE__,__LINE__);
-  exit(1);
+  //make sure it's a 4-byte operation
+  if(popcf->data.grp1.W != 1) {
+    fprintf(stderr, "Error: Byte group 1 instructions not supported (%s:%d).\n",__FILE__,__LINE__);
+    exit(1);
+  }
+  //we first need to parse the ModR/M byte
+  const uint8_t* pinstr = ps->ip - 1;
+  x86modrm modrm;
+  x86proc_modrm(ps, &modrm);
+  int32_t imm;
+  if(popcf->data.grp1.WI == 1) {
+    //4-byte immediate
+    imm = (int32_t)readimm32(ps->ip);
+    ps->ip += 4;
+  }
+  else {
+    //1-byte immediate
+    imm = (int32_t)((int8_t)readimm8(ps->ip));
+    ps->ip += 1;
+  }
+  x86opcodeproc_alu fx_proc = NULL;
+  uint32_t C, M; //does it use carry//does it modify its result
+  switch(modrm.opd2) {
+    case 0: //ADD
+      fx_proc = opcprocalu_add;
+      C = 0;
+      M = 1;
+      break;
+    case 1: //OR
+      fx_proc = opcprocalu_or;
+      C = 0;
+      M = 1;
+      break;
+    case 2: //ADC
+      fx_proc = opcprocalu_adc;
+      C = 1;
+      M = 1;
+      break;
+    case 3: //SBB
+      fx_proc = opcprocalu_sbb;
+      C = 1;
+      M = 1;
+      break;
+    case 4: //AND
+      fx_proc = opcprocalu_and;
+      C = 0;
+      M = 1;
+      break;
+    case 5: //SUB
+      fx_proc = opcprocalu_sub;
+      C = 0;
+      M = 1;
+      break;
+    case 6: //XOR
+      fx_proc = opcprocalu_xor;
+      C = 0;
+      M = 1;
+      break;
+    case 7: //CMP
+      fx_proc = opcprocalu_cmp;
+      C = 0;
+      M = 0;
+      break;
+    default:
+      fprintf(stderr, "Invalid register number %d (%s:%d).\n",modrm.opd2,__FILE__,__LINE__);
+      exit(1);
+  }
+  if(modrm.opd1_reg != REG_NONE) {
+    //a register operand
+    fprintf(stderr, "Grp1 register ops not supported (%s:%d).\n",__FILE__,__LINE__);
+    exit(1);
+  }
+  else {
+    if(M != 0) {
+      fprintf(stderr, "Stores not supported (%s:%d).\n",__FILE__,__LINE__);
+      exit(1);
+    }
+    fprintf(stderr, "Grp1 in-memory ops not supported (%s:%d).\n",__FILE__,__LINE__);
+    exit(1);
+  }
 }
 
 int opcproc_xchg(x86state* ps, x86opcodefamily* popcf, uint8_t opc)
