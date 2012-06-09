@@ -6,18 +6,20 @@
 #include <unistd.h>
 
 #include "dyncprop.h"
-#include "x86emu.h"
+#include "Data.hpp"
+#include "State.hpp"
+#include "Home.hpp"
+#include "Instr.hpp"
 
-void dyncprop_initstate(x86state* ps);
+using namespace Dyncprop;
 
 void* dyncprop(void* pfn, const char* format, ...)
 {
   //determine the number of arguments
   uint32_t nargs = strlen(format);
   
-  //create an x86state object to emulate over
-  x86state s;
-  dyncprop_initstate(&s);
+  //create an x86 State object to emulate over
+  State s;
   
   //push the arguments onto the stack
   va_list ap;
@@ -29,14 +31,14 @@ void* dyncprop(void* pfn, const char* format, ...)
       case 'D':
       case 'P':
         //symbolic 4-byte argument
-        x86stack_write32(&s, -4*(nargs-ia), x86data_init(DS_SYMBOLIC,0));
+        s.stack_at(-4*(nargs-ia)) = data(DS_SYMBOLIC,0);
         break;
         
       case 'u':
       case 'd':
       case 'p':
         //real 4-byte argument
-        x86stack_write32(&s, -4*(nargs-ia), x86data_init(DS_REAL,va_arg(ap, int)));
+        s.stack_at(-4*(nargs-ia)) = data(DS_REAL,va_arg(ap, int));
         break;
         
       case 'f':
@@ -52,43 +54,39 @@ void* dyncprop(void* pfn, const char* format, ...)
   va_end(ap);
   
   //push return address onto the stack
-  x86stack_write32(&s, -4*(nargs+1), x86data_init(DS_RET_ADDR,0));
+  s.stack_at(-4*(nargs+1)) = data(DS_RET_ADDR,0);
   
   //initialize stack pointer to point to the last used entry
-  s.regs[REG_ESP] = x86data_init(DS_STACK_PTR, -4*(nargs+1));
+  s.regs[REG_ESP] = data(DS_STACK_PTR, -4*(nargs+1));
   
   //initialize base pointer, symbolically
-  s.regs[REG_EBP] = x86data_init(DS_RET_BP, 0);
+  s.regs[REG_EBP] = data(DS_RET_BP, 0);
   
   //set up the instruction pointer
-  s.ip = pfn;
+  s.ip = (const uint8_t*)pfn;
   
   //we are now ready to begin stepping
   //need to have some mechanism here for dealing with symbolic conditional jumps,
   //which create two flows of execution
-  while(x86step(&s) == 0);
+  while(s.step() == 0);
   
   //assert that BP has been properly restored
   if(s.regs[REG_EBP].state != DS_RET_BP) {
     fprintf(stderr,"Error:  On function return, EBP is apparently not properly restored.\n");
     exit(1);
-  }
-  
-  //free the stack
-  free(s.pstack);
+  }  
   
   //allocate some memory for the function to be stored at
   uint32_t pagesize = sysconf(_SC_PAGE_SIZE);
-  uint32_t npages = (s.emitidx + pagesize - 1) / pagesize;
+  uint32_t npages = (s.emitbuf.size() + pagesize - 1) / pagesize;
   void* rv = mmap(NULL, npages*pagesize, PROT_EXEC | PROT_WRITE | PROT_READ, MAP_PRIVATE | MAP_ANON, -1, 0);
   if(rv == MAP_FAILED) {
     fprintf(stderr,"Error:  Call to mmap failed.\n");
     exit(1);
   }
   
-  //copy over the function and free the emit buffer
-  memcpy(rv, s.emitbuf, s.emitidx);
-  free(s.emitbuf);
+  //copy over the function
+  memcpy(rv, &(s.emitbuf[0]), s.emitbuf.size());
   
   //disallow writing and reading the memory
   if(mprotect(rv, pagesize*npages, PROT_EXEC) != 0) {
@@ -98,26 +96,8 @@ void* dyncprop(void* pfn, const char* format, ...)
   
   //return the address of the function code
   return rv;
+  
+  //the destructor will free all the resources associated with the virtual machine state
 }
 
-void dyncprop_initstate(x86state* ps)
-{
-  uint32_t i;
-  for(i = 0; i < REG_ENUM_MAX; i++) {
-    ps->regs[i] = x86data_init(DS_UNINITIALIZED, 0);
-  }
-  //flags
-  for(i = 0; i < FLAG_ENUM_MAX; i++) {
-    ps->flags[i] = x86data_init(DS_UNINITIALIZED, 0);
-  }
-  //instruction pointer
-  ps->ip = NULL;
-  //stack
-  ps->stacksz = 1024;
-  ps->pstack = malloc(sizeof(x86data)*ps->stacksz);
-  //emission pointer and emission buffer size
-  ps->emitbuf = malloc(1024);
-  ps->emitidx = 0;
-  ps->emitsz = 1024;
-}
 
