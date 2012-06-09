@@ -9,7 +9,7 @@
 
 namespace Dyncprop {
 
-  InstrImul::InstrImul(const uint8_t* ip): modrm(false,false,ip)
+  InstrImul::InstrImul(const uint8_t* ip): modrm(true,true,ip)
   {
     
   }

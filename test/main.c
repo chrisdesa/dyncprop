@@ -47,11 +47,13 @@ int main(int argc, char* argv[])
   
   printf("foo time: %f ns\n", foo_time * 1e9);
   printf("bar time: %f ns\n", bar_time * 1e9);
+  printf(" speedup: %02.1f%%\n", ((foo_time/bar_time) - 1.0f)*100.0f);
+  printf("\n");
   
   return 0;
 }
 
 int foo(int x, int y)
 {
-  return x * (y + y);
+  return x + (y * y * y);
 }
