@@ -55,5 +55,6 @@ int main(int argc, char* argv[])
 
 int foo(int x, int y)
 {
-  return x + (y * y * y);
+  int z = x + y * y;
+  return z * z + y * y * y;
 }

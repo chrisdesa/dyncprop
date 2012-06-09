@@ -104,17 +104,14 @@ namespace Dyncprop {
   const char* format_register(Register r)
   {    
     switch(r) {
-#define FMT_CASE(x) case x: return #x;
-    FMT_CASE(REG_EAX)
-    FMT_CASE(REG_ECX)
-    FMT_CASE(REG_EDX)
-    FMT_CASE(REG_EBX)
-    FMT_CASE(REG_ESP)
-    FMT_CASE(REG_EBP)
-    FMT_CASE(REG_ESI)
-    FMT_CASE(REG_EDI)
-    FMT_CASE(REG_NONE)
-#undef FMT_CASE
+      case REG_EAX: return "%eax";
+      case REG_ECX: return "%ecx";
+      case REG_EDX: return "%edx";
+      case REG_EBX: return "%ebx";
+      case REG_ESP: return "%esp";
+      case REG_EBP: return "%ebp";
+      case REG_ESI: return "%esi";
+      case REG_EDI: return "%edi";
       default:
         fprintf(stderr, "Error: Unrecognized register (%s:%d).\n", __FILE__, __LINE__);
         exit(1);
@@ -124,14 +121,12 @@ namespace Dyncprop {
   const char* format_flag(Flag f)
   {
     switch(f) {
-#define FMT_CASE(x) case x: return #x;
-    FMT_CASE(FLAG_C)
-    FMT_CASE(FLAG_P)
-    FMT_CASE(FLAG_A)
-    FMT_CASE(FLAG_Z)
-    FMT_CASE(FLAG_S)
-    FMT_CASE(FLAG_O)
-#undef FMT_CASE
+      case FLAG_C: return "/c";
+      case FLAG_P: return "/p";
+      case FLAG_A: return "/a";
+      case FLAG_Z: return "/z";
+      case FLAG_S: return "/s";
+      case FLAG_O: return "/o";
       default:
         fprintf(stderr, "Error: Unrecognized flag (%s:%d).\n", __FILE__, __LINE__);
         exit(1);

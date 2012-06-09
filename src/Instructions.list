@@ -6,3 +6,4 @@ INSTR(InstrRet)
 INSTR(InstrMovi)
 
 INSTR(InstrImul)
+INSTR(InstrALU1AI)

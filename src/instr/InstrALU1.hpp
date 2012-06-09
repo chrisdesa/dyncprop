@@ -25,7 +25,7 @@ namespace Dyncprop {
    *   CMP
    * 
    * It is closely related to the instruction groups:
-   *   ALUI1 - alu ops with operands EAX and immediate
+   *   ALU1AI - alu ops with operands EAX and immediate
    *   GRP1 - alu ops with operands (...) and immediate
    **/
   
@@ -53,6 +53,7 @@ namespace Dyncprop {
     
   public:
     static Instr* parse(const uint8_t* ip);
+    static const char* opid_to_string(uint32_t opid);
   };
 
 }

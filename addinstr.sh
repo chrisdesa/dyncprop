@@ -40,8 +40,13 @@ namespace Dyncprop {
     virtual const Instr* cprop(Home input, Data value) const;
     virtual const Instr* canonicalize() const;
 
+    virtual const char* to_string() const;
+
   public:
-    virtual ~$1();    
+    virtual ~$1();
+
+  private:
+    $1();
 
   public:
     static Instr* parse(const uint8_t* ip);
@@ -53,6 +58,7 @@ EOF
 cat >src/instr/$1.cpp <<EOF
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "../Instr.hpp"
 #include "../Data.hpp"
@@ -61,6 +67,11 @@ cat >src/instr/$1.cpp <<EOF
 #include "$1.hpp"
 
 namespace Dyncprop {
+
+  $1::$1()
+  {
+    
+  }
 
   $1::~$1()
   {
@@ -101,6 +112,10 @@ namespace Dyncprop {
     return NULL;
   }
 
+  const char* $1::to_string() const
+  {
+    return Instr::to_string();
+  }
   
 }
 EOF

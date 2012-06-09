@@ -78,7 +78,7 @@ namespace Dyncprop {
       fprintf(stderr, "%02x ", (uint32_t)opc[i]);
       *(ep++) = opc[i];
     }
-    fprintf(stderr, "\n\t\t");
+    fprintf(stderr, "\n");
     //next, save all the registers
     for(int i = 0; i < 8; i++) {
       *(ep++) = 0x89; //MOV
@@ -110,12 +110,12 @@ namespace Dyncprop {
     for(int i = 0; i < in_homes.size(); i++) {
       switch(in_homes[i].mode) {
         case Home::HM_REGISTER:
-          fprintf(stderr, "[%s=%08x]\n\t\t", format_register(in_homes[i].r), ins[i]);
+          fprintf(stderr, "[run]\t\t[%s=%08x]\n", format_register(in_homes[i].r), ins[i]);
           pinoutr[in_homes[i].r] = ins[i];
           break;
         case Home::HM_FLAG:
           {
-            fprintf(stderr, "[%s=%s]\n\t\t", format_flag(in_homes[i].f), ins[i] ? "true" : "false");
+            fprintf(stderr, "[run]\t\t[%s=%s]\n", format_flag(in_homes[i].f), ins[i] ? "true" : "false");
             uint32_t mask = 1 << (8 + in_homes[i].f);
             if(ins[i]) {
               //set the flag
@@ -140,7 +140,7 @@ namespace Dyncprop {
     for(int i = 0; i < out_homes.size(); i++) {
       switch(out_homes[i].mode) {
         case Home::HM_REGISTER:
-          fprintf(stderr, "{%s=%08x}\n\t\t", format_register(out_homes[i].r), pinoutr[out_homes[i].r]);
+          fprintf(stderr, "[run]\t\t{%s=%08x}\n", format_register(out_homes[i].r), pinoutr[out_homes[i].r]);
           rv.push_back(pinoutr[out_homes[i].r]);
           break;
         case Home::HM_FLAG:
@@ -148,7 +148,7 @@ namespace Dyncprop {
             uint32_t mask = 1 << (8 + out_homes[i].f);
             uint32_t pval = !!(inoutf & mask);
             rv.push_back(pval);
-            fprintf(stderr, "{%s=%s}\n\t\t", format_flag(out_homes[i].f), pval ? "true" : "false");
+            fprintf(stderr, "[run]\t\t{%s=%s}\n", format_flag(out_homes[i].f), pval ? "true" : "false");
           }
           break;
         default:
@@ -159,7 +159,7 @@ namespace Dyncprop {
     //free the canonicalized instruction
     if(ic != this) delete ic;
     //and return
-    fprintf(stderr, "\033[0m\n");
+    fprintf(stderr, "\033[0m");
     return rv;
   }
   

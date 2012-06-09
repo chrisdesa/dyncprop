@@ -123,36 +123,7 @@ namespace Dyncprop {
   
   const char* InstrALU1::to_string() const
   {
-    const char* opid_name;
-    switch(opid) {
-      case 0:
-        opid_name = "ADD";
-        break;
-      case 1:
-        opid_name = "OR";
-        break;
-      case 2:
-        opid_name = "ADC";
-        break;
-      case 3:
-        opid_name = "SBB";
-        break;
-      case 4:
-        opid_name = "AND";
-        break;
-      case 5:
-        opid_name = "SUB";
-        break;
-      case 6:
-        opid_name = "XOR";
-        break;
-      case 7:
-        opid_name = "CMP";
-        break;
-      default:
-      fprintf(stderr, "Error: Invalid ALU op (%s:%d).\n", __FILE__, __LINE__);
-      exit(1);
-    }
+    const char* opid_name = opid_to_string(opid);
     const char* opddst_name = modrm.opd_dst().to_string();
     const char* opdsrc_name = modrm.opd_src().to_string();
     char* buf = new char[256];
@@ -160,5 +131,30 @@ namespace Dyncprop {
     delete[] opddst_name;
     delete[] opdsrc_name;
     return buf;
+  }
+  
+  const char* InstrALU1::opid_to_string(uint32_t opid)
+  {    
+    switch(opid) {
+      case 0:
+        return "ADD";
+      case 1:
+        return "OR";
+      case 2:
+        return "ADC";
+      case 3:
+        return "SBB";
+      case 4:
+        return "AND";
+      case 5:
+        return "SUB";
+      case 6:
+        return "XOR";
+      case 7:
+        return "CMP";
+      default:
+        fprintf(stderr, "Error: Invalid ALU op (%s:%d).\n", __FILE__, __LINE__);
+        exit(1);
+    }
   }
 }

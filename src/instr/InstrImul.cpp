@@ -31,6 +31,12 @@ namespace Dyncprop {
   {
     std::vector<Home> rv;
     rv.push_back(modrm.opd_dst());
+    rv.push_back(Home::HomeFlag(FLAG_C));
+    rv.push_back(Home::HomeFlag(FLAG_P));
+    rv.push_back(Home::HomeFlag(FLAG_A));
+    rv.push_back(Home::HomeFlag(FLAG_Z));
+    rv.push_back(Home::HomeFlag(FLAG_S));
+    rv.push_back(Home::HomeFlag(FLAG_O));
     return rv;
   }
 
