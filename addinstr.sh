@@ -37,7 +37,8 @@ namespace Dyncprop {
     virtual std::vector<Home> inputs() const;
     virtual std::vector<Home> outputs() const;
     virtual std::vector<uint8_t> opcode() const;
-    virtual Instr* cprop(Home input, Data value) const;
+    virtual const Instr* cprop(Home input, Data value) const;
+    virtual const Instr* canonicalize() const;
 
   public:
     virtual ~$1();    
@@ -84,15 +85,23 @@ namespace Dyncprop {
     exit(1);
   }
 
-  Instr* $1::cprop(Home input, Data value) const
+  const Instr* $1::cprop(Home input, Data value) const
   {
     return NULL;
+  }
+  
+  const Instr* $1::canonicalize() const
+  {
+    fprintf(stderr, "Error: Not implemented yet (%s:%d).\n", __FILE__, __LINE__);
+    exit(1);
   }
 
   Instr* $1::parse(const uint8_t* ip)
   {
     return NULL;
   }
+
+  
 }
 EOF
 

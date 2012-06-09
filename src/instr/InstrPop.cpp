@@ -61,9 +61,15 @@ namespace Dyncprop {
     return rv;
   }
 
-  Instr* InstrPop::cprop(Home input, Data value) const
+  const Instr* InstrPop::cprop(Home input, Data value) const
   {
     return NULL;
+  }
+
+  const Instr* InstrPop::canonicalize() const
+  {
+    fprintf(stderr, "Error: Not implemented yet (%s:%d).\n", __FILE__, __LINE__);
+    exit(1);
   }
 
   Instr* InstrPop::parse(const uint8_t* ip)

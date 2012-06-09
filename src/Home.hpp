@@ -18,7 +18,7 @@ namespace Dyncprop {
     Home& operator =(const Home& h);
     bool operator ==(const Home& h) const;
     bool operator !=(const Home& h) const;
-  private:
+  public:
     enum HomeMode {
       HM_REGISTER,
       HM_FLAG,

@@ -13,6 +13,10 @@
 
 using namespace Dyncprop;
 
+namespace Dyncprop {
+  uint8_t* code_scratch = NULL;
+}
+
 void* dyncprop(void* pfn, const char* format, ...)
 {
   //determine the number of arguments
@@ -101,6 +105,18 @@ void* dyncprop(void* pfn, const char* format, ...)
   return rv;
   
   //the destructor will free all the resources associated with the virtual machine state
+}
+
+void dyncprop_init()
+{  
+  //allocate some memory for the function to be stored at
+  uint32_t pagesize = sysconf(_SC_PAGE_SIZE);
+  void* rv = mmap(NULL, pagesize, PROT_EXEC | PROT_WRITE | PROT_READ, MAP_PRIVATE | MAP_ANON, -1, 0);
+  if(rv == MAP_FAILED) {
+    fprintf(stderr,"Error:  Call to mmap failed.\n");
+    exit(1);
+  }
+  code_scratch = (uint8_t*)rv;
 }
 
 

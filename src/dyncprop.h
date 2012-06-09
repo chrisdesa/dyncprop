@@ -20,5 +20,9 @@ extern "C"
 #endif
 void* dyncprop(void* pfn, const char* format, ...);
 
+#ifdef __cplusplus
+extern "C"
+#endif
+void dyncprop_init();
 
 

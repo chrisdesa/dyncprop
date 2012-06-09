@@ -20,7 +20,8 @@ namespace Dyncprop {
     virtual void emit(State& s) const;
     virtual std::vector<int32_t> run(std::vector<int32_t> ins) const;
     virtual std::vector<Data> emulate(std::vector<Data> ins) const;
-    virtual Instr* cprop(Home input, Data value) const = 0;
+    virtual const Instr* cprop(Home input, Data value) const = 0;
+    virtual const Instr* canonicalize() const = 0;
     
     virtual bool process(State& s) const;
     
@@ -64,4 +65,7 @@ namespace Dyncprop {
   uint16_t readimm16(const uint8_t* ip);
   uint32_t readimm32(const uint8_t* ip);
   
+  void writeimm8(uint8_t* ip, uint8_t value);
+  void writeimm16(uint8_t* ip, uint16_t value);
+  void writeimm32(uint8_t* ip, uint32_t value);
 }

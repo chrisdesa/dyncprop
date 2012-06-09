@@ -45,11 +45,17 @@ namespace Dyncprop {
     return rv;
   }
 
-  Instr* InstrMov::cprop(Home input, Data value) const
+  const Instr* InstrMov::cprop(Home input, Data value) const
   {
     return NULL;
   }
-  
+
+  const Instr* InstrMov::canonicalize() const
+  {
+    uint8_t v_modrm = (3 << 6)|(1 << 3)|(2);
+    return new InstrMov(modrm.w, modrm.d, &v_modrm);
+  }
+  /*
   std::vector<int32_t> InstrMov::run(std::vector<int32_t> ins) const
   {
     if(ins.size() != 1) {
@@ -60,7 +66,7 @@ namespace Dyncprop {
     outs.push_back(ins[0]);
     return outs;
   }  
-  
+  */
   std::vector<Data> InstrMov::emulate(std::vector<Data> ins) const
   {
     if(ins.size() != 1) {

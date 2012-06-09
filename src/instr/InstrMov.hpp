@@ -26,9 +26,10 @@ namespace Dyncprop {
     virtual std::vector<Home> inputs() const;
     virtual std::vector<Home> outputs() const;
     virtual std::vector<uint8_t> opcode() const;
-    virtual Instr* cprop(Home input, Data value) const;
+    virtual const Instr* cprop(Home input, Data value) const;
     virtual std::vector<Data> emulate(std::vector<Data> ins) const;
-    virtual std::vector<int32_t> run(std::vector<int32_t> ins) const;
+    //virtual std::vector<int32_t> run(std::vector<int32_t> ins) const;
+    virtual const Instr* canonicalize() const;
 
     virtual const char* to_string() const;
     

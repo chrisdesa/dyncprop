@@ -10,7 +10,9 @@
 #include "Instructions.hpp"
 
 namespace Dyncprop {
- 
+  
+  extern uint8_t* code_scratch;
+  
   Instr::~Instr()
   {
     
@@ -41,8 +43,124 @@ namespace Dyncprop {
   
   std::vector<int32_t> Instr::run(std::vector<int32_t> ins) const
   {
-    fprintf(stderr, "Error: Not implemented yet (%s:%d).\n", __FILE__, __LINE__);
-    exit(1);
+    //canonicalize the instruction, which removes all memory ops
+    const Instr* ic = this->canonicalize();
+    const char* instr_name = ic->to_string();
+    fprintf(stderr, "\033[32m[run]    %s\t\t", instr_name);
+    delete[] instr_name;
+    //allocate space to save all the registers
+    int32_t pcsr[8];
+    //allocate space for input/output registers and flags
+    int32_t pinoutr[8];
+    int32_t inoutf = 0; //flags are in bits 8-15
+    //start emitting instructions
+    uint8_t* ep = code_scratch;
+    //first, save all the registers
+    for(int i = 0; i < 8; i++) {
+      *(ep++) = 0x89; //MOV
+      *(ep++) = (0 << 6) | (i << 3) | (5);
+      writeimm32(ep, (uint32_t)(pcsr+i)); ep += 4;
+    }
+    //next, load the flags
+    *(ep++) = 0x8B; //MOV
+    *(ep++) = (0 << 6) | (REG_EAX << 3) | (5);
+    writeimm32(ep, (uint32_t)(&inoutf)); ep += 4;
+    *(ep++) = 0x9E; //store AH into flags
+    //next, load all the registers
+    for(int i = 0; i < 8; i++) {
+      *(ep++) = 0x8B; //MOV
+      *(ep++) = (0 << 6) | (i << 3) | (5);
+      writeimm32(ep, (uint32_t)(pinoutr+i)); ep += 4;
+    }
+    //next, execute the op
+    std::vector<uint8_t> opc = ic->opcode();
+    for(int i = 0; i < opc.size(); i++) {
+      fprintf(stderr, "%02x ", (uint32_t)opc[i]);
+      *(ep++) = opc[i];
+    }
+    fprintf(stderr, "\n\t\t");
+    //next, save all the registers
+    for(int i = 0; i < 8; i++) {
+      *(ep++) = 0x89; //MOV
+      *(ep++) = (0 << 6) | (i << 3) | (5);
+      writeimm32(ep, (uint32_t)(pinoutr+i)); ep += 4;
+    }
+    //next, save the flags
+    *(ep++) = 0x9F; //load AH from flags
+    *(ep++) = 0x89; //MOV
+    *(ep++) = (0 << 6) | (REG_EAX << 3) | (5);
+    writeimm32(ep, (uint32_t)(&inoutf)); ep += 4;
+    //next, restore all the original register values
+    for(int i = 0; i < 8; i++) {
+      *(ep++) = 0x8B; //MOV
+      *(ep++) = (0 << 6) | (i << 3) | (5);
+      writeimm32(ep, (uint32_t)(pcsr+i)); ep += 4;
+    }
+    //finally, return
+    *(ep++) = 0xC3; //RET
+    //now, get the inputs and outputs of the canonicalized instructions
+    std::vector<Home> in_homes = ic->inputs();
+    std::vector<Home> out_homes = ic->outputs();
+    //verify the lengths
+    if(in_homes.size() != ins.size()) {
+      fprintf(stderr, "Error: Vector size mismatch (%s:%d).\n", __FILE__, __LINE__);
+      exit(1);
+    }
+    //setup the variables
+    for(int i = 0; i < in_homes.size(); i++) {
+      switch(in_homes[i].mode) {
+        case Home::HM_REGISTER:
+          fprintf(stderr, "[%s=%08x]\n\t\t", format_register(in_homes[i].r), ins[i]);
+          pinoutr[in_homes[i].r] = ins[i];
+          break;
+        case Home::HM_FLAG:
+          {
+            fprintf(stderr, "[%s=%s]\n\t\t", format_flag(in_homes[i].f), ins[i] ? "true" : "false");
+            uint32_t mask = 1 << (8 + in_homes[i].f);
+            if(ins[i]) {
+              //set the flag
+              inoutf = inoutf | mask;
+            }
+            else {
+              //reset the flag
+              inoutf = inoutf & (~mask);
+            }
+          }
+          break;
+        default:
+          fprintf(stderr, "Error: Invalid home for canonicalized operand (%s:%d).\n", __FILE__, __LINE__);
+          exit(1);
+      }
+    }
+    //call the function
+    void (*pfnscratch)(void) = (void (*)())code_scratch;
+    pfnscratch();
+    //recover the results
+    std::vector<int32_t> rv;
+    for(int i = 0; i < out_homes.size(); i++) {
+      switch(out_homes[i].mode) {
+        case Home::HM_REGISTER:
+          fprintf(stderr, "{%s=%08x}\n\t\t", format_register(out_homes[i].r), pinoutr[out_homes[i].r]);
+          rv.push_back(pinoutr[out_homes[i].r]);
+          break;
+        case Home::HM_FLAG:
+          {
+            uint32_t mask = 1 << (8 + out_homes[i].f);
+            uint32_t pval = !!(inoutf & mask);
+            rv.push_back(pval);
+            fprintf(stderr, "{%s=%s}\n\t\t", format_flag(out_homes[i].f), pval ? "true" : "false");
+          }
+          break;
+        default:
+          fprintf(stderr, "Error: Invalid home for canonicalized operand (%s:%d).\n", __FILE__, __LINE__);
+          exit(1);
+      }
+    }
+    //free the canonicalized instruction
+    if(ic != this) delete ic;
+    //and return
+    fprintf(stderr, "\033[0m\n");
+    return rv;
   }
   
   std::vector<Data> Instr::emulate(std::vector<Data> ins) const
@@ -100,7 +218,7 @@ namespace Dyncprop {
       for(int i = 0; i < inputs.size(); i++) {
         Data nd = inputs[i].get(s);
         if(nd.isvirtual()&&(!nd.issymbolic())) {
-          Instr* ni = cprop(inputs[i], nd);
+          const Instr* ni = cprop(inputs[i], nd);
           if(ni != NULL) {
             //restart the function with the mutated instruction
             bool rv = ni->process(s);
@@ -156,7 +274,7 @@ namespace Dyncprop {
     //look at mod field
     switch(mod) {
       case 0:
-        if(rm == 6 /*0b110*/) {
+        if(rm == 5 /*0b101*/) {
           //displacement is address
           m = true;
           opd1_reg = REG_NONE;
@@ -243,7 +361,7 @@ namespace Dyncprop {
     std::vector<uint8_t> rv;
     if(m) {
       if(opd1_reg == REG_NONE) {
-        uint8_t modrm = (0 << 6) | (opd2_reg << 3) | 6;
+        uint8_t modrm = (0 << 6) | (opd2_reg << 3) | 5;
         rv.push_back(modrm);
         uint32_t imm = opd1_offset;
         rv.push_back((uint8_t)(imm & 255)); imm >>= 8;
@@ -252,7 +370,7 @@ namespace Dyncprop {
         rv.push_back((uint8_t)(imm & 255)); imm >>= 8;
       }
       else {
-        if((opd1_offset == 0)&&(opd1_reg != 6)) {
+        if((opd1_offset == 0)&&(opd1_reg != 5)) {
           uint8_t modrm = (0 << 6) | (opd2_reg << 3) | (opd1_reg);
           rv.push_back(modrm);
         }
@@ -293,6 +411,25 @@ namespace Dyncprop {
   {
     return ((uint16_t)ip[0]) + ((uint16_t)ip[1]) << 8
         + ((uint16_t)ip[2] << 16) + ((uint16_t)ip[3]) << 24;
+  }
+  
+  void writeimm8(uint8_t* ip, uint8_t value)
+  {
+    *(ip++) = value;
+  }
+  
+  void writeimm16(uint8_t* ip, uint16_t value)
+  {
+    *(ip++) = (uint8_t)value; value >>= 8;
+    *(ip++) = (uint8_t)value; value >>= 8;
+  }
+  
+  void writeimm32(uint8_t* ip, uint32_t value)
+  {
+    *(ip++) = (uint8_t)value; value >>= 8;
+    *(ip++) = (uint8_t)value; value >>= 8;
+    *(ip++) = (uint8_t)value; value >>= 8;
+    *(ip++) = (uint8_t)value; value >>= 8;
   }
   
 }

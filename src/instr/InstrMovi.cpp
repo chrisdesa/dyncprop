@@ -43,13 +43,22 @@ namespace Dyncprop {
     return rv;
   }
 
-  Instr* InstrMovi::cprop(Home input, Data value) const
+  const Instr* InstrMovi::cprop(Home input, Data value) const
   {
     return NULL;
   }
 
+  const Instr* InstrMovi::canonicalize() const
+  {
+    return this;
+  }
+
   Instr* InstrMovi::parse(const uint8_t* ip)
   {
+    uint8_t opc = *ip;
+    if((opc >= 0xB8)&&(opc < 0xC0)) {
+      return new InstrMovi((Register)(opc - 0xB8), readimm32(ip+1));
+    }
     return NULL;
   }
     

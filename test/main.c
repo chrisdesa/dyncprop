@@ -12,6 +12,8 @@ int main(int argc, char* argv[])
   float foo_time, bar_time;
   const int niters = 100000000;
   
+  dyncprop_init();
+  
   printf("Hello world!\n");
   printf("Testing original: 3 + 10*4 = %d\n", foo(3,4));
   
@@ -51,5 +53,5 @@ int main(int argc, char* argv[])
 
 int foo(int x, int y)
 {
-  return y + y + y + y + y + y + y + y + y + y + x;
+  return y + y + y + y + y + y + y + y + y + y - x;
 }

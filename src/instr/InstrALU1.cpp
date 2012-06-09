@@ -68,7 +68,7 @@ namespace Dyncprop {
     }
     return outs;
   }
-  
+  /*
   std::vector<int32_t> InstrALU1::run(std::vector<int32_t> ins) const
   {
     if(opid == 0) {
@@ -88,7 +88,7 @@ namespace Dyncprop {
       exit(1);
     }
   }
-
+  */
   std::vector<uint8_t> InstrALU1::opcode() const
   {
     std::vector<uint8_t> rv;
@@ -101,9 +101,15 @@ namespace Dyncprop {
     return rv;
   }
 
-  Instr* InstrALU1::cprop(Home input, Data value) const
+  const Instr* InstrALU1::cprop(Home input, Data value) const
   {
     return NULL;
+  }
+  
+  const Instr* InstrALU1::canonicalize() const
+  {
+    uint8_t v_modrm = (3 << 6)|(1 << 3)|(2);
+    return new InstrALU1(opid, modrm.w, modrm.d, &v_modrm);
   }
 
   Instr* InstrALU1::parse(const uint8_t* ip)

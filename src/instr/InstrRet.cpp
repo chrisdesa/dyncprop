@@ -38,7 +38,12 @@ namespace Dyncprop {
     return rv;
   }
 
-  Instr* InstrRet::cprop(Home input, Data value) const
+  const Instr* InstrRet::cprop(Home input, Data value) const
+  {
+    return NULL;
+  }
+
+  const Instr* InstrRet::canonicalize() const
   {
     return NULL;
   }
