@@ -4,6 +4,7 @@
 #include "Home.hpp"
 #include "State.hpp"
 #include "Data.hpp"
+#include "instr/InstrMovi.hpp"
 
 namespace Dyncprop {
   
@@ -53,7 +54,33 @@ namespace Dyncprop {
   
   void Home::realize(State& s) const
   {
-    
+    Data& data = access(s);
+    if(data.state != DS_VIRTUAL) {
+      fprintf(stderr, "Error: Attempted to realize nonvirtual data (%s:%d).\n", __FILE__, __LINE__);
+      exit(1);
+    }
+    switch(mode) {
+      case HM_REGISTER:
+        {
+          Instr* instr = new InstrMovi(r, data.value);
+          instr->emit(s);
+          delete instr;
+          data.state = DS_REAL;
+        }
+        break;
+      case HM_FLAG:
+        fprintf(stderr, "Error: Realizing flags not supported (%s:%d).\n", __FILE__, __LINE__);
+        exit(1);
+      case HM_MEMORY:
+        fprintf(stderr, "Error: Realizing memory not supported (%s:%d).\n", __FILE__, __LINE__);
+        exit(1);
+      case HM_MEMORY_CONST:
+        fprintf(stderr, "Error: Realizing constant memory not supported (%s:%d).\n", __FILE__, __LINE__);
+        exit(1);
+      default:
+        fprintf(stderr, "Error: Invalid home mode (%s:%d).\n", __FILE__, __LINE__);
+        exit(1);
+    }
   }
   
   Data Home::get(State& s) const
@@ -173,4 +200,26 @@ namespace Dyncprop {
     return rv;
   }
   
+  const char* Home::to_string() const
+  {
+    char* buf = new char[64];
+    switch(mode) {
+      case HM_REGISTER:
+        sprintf(buf, "%s", format_register(r));
+        break;
+      case HM_FLAG:
+        sprintf(buf, "%s", format_flag(f));
+        break;
+      case HM_MEMORY:
+        sprintf(buf, "*(%s+%08x)", format_register(r), offset);
+        break;
+      case HM_MEMORY_CONST:
+        sprintf(buf, "*(%08x)", offset);
+        break;
+      default:
+        fprintf(stderr, "Error: Invalid home mode (%s:%d).\n", __FILE__, __LINE__);
+        exit(1);
+    }
+    return buf;
+  }  
 }

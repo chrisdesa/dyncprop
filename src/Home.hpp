@@ -37,6 +37,8 @@ namespace Dyncprop {
     static Home HomeFlag(Flag f);
     static Home HomeMemory(Register r, int32_t offset);
     static Home HomeMemoryConst(int32_t offset);
+  public:
+    const char* to_string() const;
   };
   
 }

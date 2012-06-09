@@ -53,10 +53,18 @@ namespace Dyncprop {
     return NULL;
   }
   
+  const char* InstrPush::to_string() const
+  {
+    char* buf = new char[64];
+    sprintf(buf, "PUSH %s", format_register(opd));
+    return buf;
+  }
+  
   std::vector<Data> InstrPush::emulate(std::vector<Data> ins) const
   {
     std::vector<Data> rv;
     if(opd != REG_ESP) {
+      fprintf(stderr, "Push::emulate(%s, %s)\n", format_datastate(ins[0].state), format_datastate(ins[1].state));
       Data dsp = ins[1];
       dsp.value -= 4;
       rv.push_back(dsp);
@@ -72,7 +80,7 @@ namespace Dyncprop {
     return rv;
   }
   
-  InstrPush::InstrPush(Register opd_): opd(opd)
+  InstrPush::InstrPush(Register opd_): opd(opd_)
   {
     
   }

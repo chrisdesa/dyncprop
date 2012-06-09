@@ -1,3 +1,7 @@
 INSTR(InstrALU1)
 INSTR(InstrPush)
 INSTR(InstrMov)
+INSTR(InstrPop)
+INSTR(InstrRet)
+INSTR(InstrMovi)
+

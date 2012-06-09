@@ -80,4 +80,15 @@ namespace Dyncprop {
     }
     return NULL;
   }
+  
+  const char* InstrMov::to_string() const
+  {
+    const char* opddst_name = modrm.opd_dst().to_string();
+    const char* opdsrc_name = modrm.opd_src().to_string();
+    char* buf = new char[256];
+    sprintf(buf, "MOV %s, %s", opddst_name, opdsrc_name);
+    delete[] opddst_name;
+    delete[] opdsrc_name;
+    return buf;
+  }
 }

@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <vector>
 
 #include "Instr.hpp"
 #include "Data.hpp"
@@ -25,10 +27,16 @@ namespace Dyncprop {
   
   void Instr::emit(State& s) const
   {
+    //display the instruction
+    const char* instr_name = this->to_string();
+    fprintf(stderr, "\033[35m[emit]   %s\t\t", instr_name);
+    delete[] instr_name;
     std::vector<uint8_t> opc = opcode();
     for(int i = 0; i < opc.size(); i++) {
+      fprintf(stderr, "%02x ", (uint32_t)opc[i]);
       s.emitbuf.push_back(opc[i]);
     }
+    fprintf(stderr, "\033[0m\n");
   }
   
   std::vector<int32_t> Instr::run(std::vector<int32_t> ins) const
@@ -50,6 +58,90 @@ namespace Dyncprop {
       rv.push_back(data(DS_SYMBOLIC, 0));
     }
     return rv;
+  }
+  
+  bool Instr::process(State& s) const
+  {
+    //get the inputs and outputs
+    std::vector<Home> inputs = this->inputs();
+    std::vector<Home> outputs = this->outputs();
+    //check if all the inputs are virtual
+    bool allvirtual = true;
+    for(int i = 0; i < inputs.size(); i++) {
+      allvirtual = allvirtual && (inputs[i].get(s).isvirtual());
+    }
+    //if all the inputs are virtual, run the instruction
+    if(allvirtual) {
+      //assemble a vector of the input values
+      std::vector<int32_t> in_vs;
+      for(int i = 0; i < inputs.size(); i++) {
+        in_vs.push_back(inputs[i].get(s).value);
+      }
+      //run the instructions
+      std::vector<int32_t> out_vs = run(in_vs);
+      if(outputs.size() != out_vs.size()) {
+        fprintf(stderr, "Error: Vector mismatch [%d vs %d] (%s:%d).\n", outputs.size(), out_vs.size(), __FILE__, __LINE__);
+        exit(1);
+      }
+      //get the output locations
+      //we need to do this because the output locations may change as we write out
+      std::vector<Data*> out_locs;
+      for(int i = 0; i < outputs.size(); i++) {
+        out_locs.push_back(&(outputs[i].access(s)));
+      }
+      //write the outputs
+      for(int i = 0; i < outputs.size(); i++) {
+        *(out_locs[i]) = data(DS_VIRTUAL, out_vs[i]);
+      }
+      //we're done processing the instruction; f
+    }
+    else {
+      //realize all the inputs
+      for(int i = 0; i < inputs.size(); i++) {
+        Data nd = inputs[i].get(s);
+        if(nd.isvirtual()&&(!nd.issymbolic())) {
+          Instr* ni = cprop(inputs[i], nd);
+          if(ni != NULL) {
+            //restart the function with the mutated instruction
+            bool rv = ni->process(s);
+            delete ni;
+            return rv;
+          }
+          else {
+            //realize the operand
+            inputs[i].realize(s);
+          }
+        }
+      }
+      //emit the instruction
+      emit(s);
+      //get the operand states
+      std::vector<Data> in_ds;
+      for(int i = 0; i < inputs.size(); i++) {
+        in_ds.push_back(inputs[i].get(s));
+      }
+      //emulate the instruction
+      std::vector<Data> out_ds = emulate(in_ds);
+      //get the output locations
+      //we need to do this because the output locations may change as we write out
+      std::vector<Data*> out_locs;
+      for(int i = 0; i < outputs.size(); i++) {
+        out_locs.push_back(&(outputs[i].access(s)));
+      }
+      //write the outputs
+      for(int i = 0; i < outputs.size(); i++) {
+        *(out_locs[i]) = out_ds[i];
+      }
+      //we're done processing the instruction
+    }
+    return false;
+  }
+  
+  const char* Instr::to_string() const
+  {
+    char* buf = new char[16];
+    strcpy(buf, "INSTR ?? ??");
+    return buf;
   }
   
   ModRM::ModRM(bool w_, bool d_, const uint8_t* ip): w(w_), d(d_)

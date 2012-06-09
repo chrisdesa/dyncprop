@@ -6,7 +6,7 @@ echo "Usage: `basename $0` {classname}"
 exit
 fi
 
-if [[ (-e "srcpp/$1.cpp") || (-e "srcpp/$1.hpp") ]]
+if [[ (-e "src/instr/$1.cpp") || (-e "src/instr/$1.hpp") ]]
 then
 echo "Error: class files already exist."
 exit

@@ -3,7 +3,6 @@
 #include <stdint.h>
 #include <vector>
 
-#include "../State.hpp"
 #include "../Instr.hpp"
 
 namespace Dyncprop {
@@ -13,29 +12,26 @@ namespace Dyncprop {
   class State;
 
   /**
-   * InstrPush
-   * 
-   * Contains instructions:
-   *   PUSH $reg
+   * InstrRet
    **/
   
-  class InstrPush: public Instr {
+  class InstrRet: public Instr {    
   public:
     virtual std::vector<Home> inputs() const;
     virtual std::vector<Home> outputs() const;
     virtual std::vector<uint8_t> opcode() const;
     virtual Instr* cprop(Home input, Data value) const;
-    virtual std::vector<Data> emulate(std::vector<Data> ins) const;
     
+    virtual bool process(State& s) const;
+
     virtual const char* to_string() const;
     
-  public:
-    virtual ~InstrPush();
-    
   private:
-    Register opd;
-    InstrPush(Register opd_);
+    InstrRet();
     
+  public:
+    virtual ~InstrRet();    
+
   public:
     static Instr* parse(const uint8_t* ip);
   };

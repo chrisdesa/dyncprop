@@ -59,8 +59,11 @@ void* dyncprop(void* pfn, const char* format, ...)
   //initialize stack pointer to point to the last used entry
   s.regs[REG_ESP] = data(DS_STACK_PTR, -4*(nargs+1));
   
-  //initialize base pointer, symbolically
+  //initialize callee-save registers, symbolically
   s.regs[REG_EBP] = data(DS_RET_BP, 0);
+  s.regs[REG_EBX] = data(DS_RET_BX, 0);
+  s.regs[REG_ESI] = data(DS_RET_SI, 0);
+  s.regs[REG_EDI] = data(DS_RET_DI, 0);
   
   //set up the instruction pointer
   s.ip = (const uint8_t*)pfn;

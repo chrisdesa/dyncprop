@@ -22,6 +22,10 @@ namespace Dyncprop {
     virtual std::vector<Data> emulate(std::vector<Data> ins) const;
     virtual Instr* cprop(Home input, Data value) const = 0;
     
+    virtual bool process(State& s) const;
+    
+    virtual const char* to_string() const;
+    
   public:
     virtual ~Instr();
     

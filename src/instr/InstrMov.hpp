@@ -30,6 +30,8 @@ namespace Dyncprop {
     virtual std::vector<Data> emulate(std::vector<Data> ins) const;
     virtual std::vector<int32_t> run(std::vector<int32_t> ins) const;
 
+    virtual const char* to_string() const;
+    
   public:
     virtual ~InstrMov();    
 
