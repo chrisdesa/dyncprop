@@ -39,6 +39,7 @@ namespace Dyncprop {
     virtual std::vector<uint8_t> opcode() const;
     virtual const Instr* cprop(Home input, Data value) const;
     virtual const Instr* canonicalize() const;
+    virtual std::vector<Data> emulate(std::vector<Data> ins) const;
 
     virtual const char* to_string() const;
 
@@ -99,6 +100,11 @@ namespace Dyncprop {
   const Instr* $1::cprop(Home input, Data value) const
   {
     return NULL;
+  }
+  
+  std::vector<Data> $1::emulate(std::vector<Data> ins) const
+  {
+    return Instr::emulate(ins);
   }
   
   const Instr* $1::canonicalize() const

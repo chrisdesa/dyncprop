@@ -6,3 +6,5 @@
 #include "instr/InstrMovi.hpp"
 #include "instr/InstrImul.hpp"
 #include "instr/InstrALU1AI.hpp"
+#include "instr/InstrGroup1.hpp"
+#include "instr/InstrLeave.hpp"

@@ -4,6 +4,7 @@ INSTR(InstrMov)
 INSTR(InstrPop)
 INSTR(InstrRet)
 INSTR(InstrMovi)
-
 INSTR(InstrImul)
 INSTR(InstrALU1AI)
+INSTR(InstrGroup1)
+INSTR(InstrLeave)
