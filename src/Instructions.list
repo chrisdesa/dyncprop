@@ -5,3 +5,4 @@ INSTR(InstrPop)
 INSTR(InstrRet)
 INSTR(InstrMovi)
 
+INSTR(InstrImul)

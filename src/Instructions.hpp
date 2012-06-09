@@ -4,3 +4,4 @@
 #include "instr/InstrPop.hpp"
 #include "instr/InstrRet.hpp"
 #include "instr/InstrMovi.hpp"
+#include "instr/InstrImul.hpp"
