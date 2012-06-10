@@ -24,10 +24,15 @@ namespace Dyncprop {
       exit(1);
     }
     //increment the instruction pointer
-    ip += instr->opcode().size();
+    std::vector<uint8_t> instropc = instr->opcode();
+    ip += instropc.size();
     //display the instruction
     const char* instr_name = instr->to_string();
-    fprintf(stderr, "\033[36m[decode] %s\033[0m\n", instr_name);
+    fprintf(stderr, "\033[36m[decode] %s\t", instr_name);
+    for(int i = 0; i < instropc.size(); i++) {
+    fprintf(stderr, "%02x ", (uint8_t)(instropc[i]));
+    }
+    fprintf(stderr, "\033[0m\n");
     delete[] instr_name;
     //process the instruction
     bool rv = instr->process(*this);

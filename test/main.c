@@ -15,15 +15,15 @@ int main(int argc, char* argv[])
   dyncprop_init();
   
   printf("Hello world!\n");
-  printf("Testing original: 3 + 10*4 = %d\n", foo(3,4));
+  printf("Testing original: %d\n", foo(3,5));
   
   printf("Generating function...\n");
-  int (*bar)(int,int) = dyncprop(foo,"Dd",4);
+  int (*bar)(int,int) = dyncprop(foo,"Dd",5);
   printf("Function generated!\n");
   
-  printf("Testing prop 1:   3 + 10*4 = %d\n", bar(3,4));
-  printf("Testing prop 2:   3 + 10*4 = %d\n", bar(3,1));
-  printf("Testing prop 3:   3 + 10*4 = %d\n", bar(3,0));
+  printf("Testing prop 1:   %d\n", bar(3,5));
+  printf("Testing prop 2:   %d\n", bar(3,1));
+  printf("Testing prop 3:   %d\n", bar(3,0));
   
   printf("\n");
   
@@ -55,6 +55,11 @@ int main(int argc, char* argv[])
 
 int foo(int x, int y)
 {
-  int z = x + y * y;
-  return z * z + y * y * y;
+  int z = 1;
+  int r = 0;
+  for(int i = 0; i < 24; i++) {
+    z *= y;
+    r += x + y;
+  }
+  return r & 255;
 }

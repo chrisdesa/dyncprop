@@ -51,6 +51,12 @@ namespace Dyncprop {
     std::vector<uint8_t> rv;
     uint8_t opc = (opid << 3) | (5);
     rv.push_back(opc);
+    uint32_t imm32 = (uint32_t)imm;
+    rv.push_back((uint8_t)imm32); imm32 >>= 8;
+    rv.push_back((uint8_t)imm32); imm32 >>= 8;
+    rv.push_back((uint8_t)imm32); imm32 >>= 8;
+    rv.push_back((uint8_t)imm32); imm32 >>= 8;
+    return rv;
   }
 
   const Instr* InstrALU1AI::cprop(Home input, Data value) const

@@ -8,3 +8,5 @@
 #include "instr/InstrALU1AI.hpp"
 #include "instr/InstrGroup1.hpp"
 #include "instr/InstrLeave.hpp"
+#include "instr/InstrMovImm.hpp"
+#include "instr/InstrJmp.hpp"

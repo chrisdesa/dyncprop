@@ -5,6 +5,7 @@
 #include "State.hpp"
 #include "Data.hpp"
 #include "instr/InstrMovi.hpp"
+#include "instr/InstrMovImm.hpp"
 
 namespace Dyncprop {
   
@@ -72,8 +73,13 @@ namespace Dyncprop {
         fprintf(stderr, "Error: Realizing flags not supported (%s:%d).\n", __FILE__, __LINE__);
         exit(1);
       case HM_MEMORY:
-        fprintf(stderr, "Error: Realizing memory not supported (%s:%d).\n", __FILE__, __LINE__);
-        exit(1);
+        {
+          Instr* instr = new InstrMovImm(r, offset, data.value);
+          instr->emit(s);
+          delete instr;
+          data.state = DS_REAL;
+        }
+        break;
       case HM_MEMORY_CONST:
         fprintf(stderr, "Error: Realizing constant memory not supported (%s:%d).\n", __FILE__, __LINE__);
         exit(1);
@@ -211,7 +217,12 @@ namespace Dyncprop {
         sprintf(buf, "%s", format_flag(f));
         break;
       case HM_MEMORY:
-        sprintf(buf, "*(%s+%08x)", format_register(r), offset);
+        if(offset >= 0) {
+          sprintf(buf, "*(%s+%08x)", format_register(r), offset);
+        }
+        else if(offset < 0) {
+          sprintf(buf, "*(%s-%08x)", format_register(r), -offset);
+        }
         break;
       case HM_MEMORY_CONST:
         sprintf(buf, "*(%08x)", offset);

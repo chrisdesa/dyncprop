@@ -39,7 +39,7 @@ namespace Dyncprop {
     ModRM(bool w_, bool d_, const uint8_t* ip);
     ~ModRM();
     
-  private:
+  public:
     ModRM() {}
     
   private:

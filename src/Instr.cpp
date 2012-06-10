@@ -33,7 +33,7 @@ namespace Dyncprop {
     const char* instr_name = this->to_string();
     fprintf(stderr, "\033[35m[emit]   %s\t\t", instr_name);
     delete[] instr_name;
-    std::vector<uint8_t> opc = opcode();
+    std::vector<uint8_t> opc = this->opcode();
     for(int i = 0; i < opc.size(); i++) {
       fprintf(stderr, "%02x ", (uint32_t)opc[i]);
       s.emitbuf.push_back(opc[i]);
@@ -404,13 +404,13 @@ namespace Dyncprop {
 
   uint16_t readimm16(const uint8_t* ip)
   {
-    return ((uint16_t)ip[0]) + ((uint16_t)ip[1]) << 8;
+    return ((uint16_t)ip[0]) + (((uint16_t)ip[1]) << 8);
   }
 
   uint32_t readimm32(const uint8_t* ip)
   {
-    return ((uint16_t)ip[0]) + ((uint16_t)ip[1]) << 8
-        + ((uint16_t)ip[2] << 16) + ((uint16_t)ip[3]) << 24;
+    return ((uint32_t)ip[0]) + (((uint32_t)ip[1]) << 8)
+        + (((uint32_t)ip[2]) << 16) + (((uint32_t)ip[3]) << 24);
   }
   
   void writeimm8(uint8_t* ip, uint8_t value)
