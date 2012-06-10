@@ -12,10 +12,12 @@ namespace Dyncprop {
   class State;
 
   /**
-   * InstrJmp
+   * InstrGroupC1
+   * 
+   * For shift/rotate immediate instructions beginning with 0xC1
    **/
   
-  class InstrJmp: public Instr {    
+  class InstrGroupC1: public Instr {    
   public:
     virtual std::vector<Home> inputs() const;
     virtual std::vector<Home> outputs() const;
@@ -26,15 +28,14 @@ namespace Dyncprop {
 
     virtual const char* to_string() const;
 
-    virtual bool process(State& s) const;
-    
   public:
-    virtual ~InstrJmp();
-    InstrJmp(int32_t imm_, bool absolute_);
+    virtual ~InstrGroupC1();
 
   private:
-    int32_t imm;
-    bool absolute;
+    InstrGroupC1(const uint8_t* ip);
+    InstrGroupC1(const uint8_t* ip, int8_t imm_);
+    ModRM modrm;
+    int8_t imm;
 
   public:
     static Instr* parse(const uint8_t* ip);

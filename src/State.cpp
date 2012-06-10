@@ -13,6 +13,23 @@ namespace Dyncprop {
     
   }
   
+  State* State::clone() const
+  {
+    State* rv = new State();
+    for(int i = 0; i < REG_ENUM_MAX; i++) {
+      rv->regs[i] = regs[i];
+    }
+    for(int i = 0; i < FLAG_ENUM_MAX; i++) {
+      rv->flags[i] = flags[i];
+    }
+    rv->stack.resize(stack.size());
+    for(int i = 0; i < stack.size(); i++) {
+      rv->stack[i] = stack[i];
+    }
+    rv->ip = ip;
+    return rv;
+  }
+  
   bool State::step()
   {
     //parse the next instruction
@@ -40,6 +57,42 @@ namespace Dyncprop {
     delete instr;
     //and return
     return rv;
+  }
+  
+  void State::realize_everything()
+  {
+    //realize the registers and search for a stack pointer
+    Register reg_stack = REG_NONE;
+    for(int i = 0; i < REG_ENUM_MAX; i++) {
+      if(regs[i].state == DS_VIRTUAL) {
+        Home hr = Home::HomeRegister((Register)i);
+        hr.realize(*this);
+      }
+      else if(regs[i].state == DS_STACK_PTR) {
+        reg_stack = (Register)i;
+      }
+    }
+    if(reg_stack == REG_NONE) {
+      fprintf(stderr, "Error: Stack pointer lost (%s:%d).\n", __FILE__, __LINE__);
+      exit(1);
+    }
+    int32_t stack_base = regs[reg_stack].value;
+    //realize the flags
+    for(int i = 0; i < FLAG_ENUM_MAX; i++) {
+      if((flag_valid((Flag)i))&&(flags[i].state == DS_VIRTUAL)) {
+        Home hf = Home::HomeFlag((Flag)i);
+        hf.realize(*this);
+      }
+    }
+    //realize the stack
+    for(int i = 0; i < stack.size(); i++) {
+      if(stack[i].state == DS_VIRTUAL) {
+        int32_t stack_offset = -4*(i+1);
+        int32_t relative_addr = stack_offset - stack_base;
+        Home hm = Home::HomeMemory(reg_stack, relative_addr); 
+        hm.realize(*this);
+      }
+    }
   }
   
   Data& State::stack_at(int32_t addr)

@@ -12,10 +12,10 @@ namespace Dyncprop {
   class State;
 
   /**
-   * InstrJmp
+   * InstrInc
    **/
   
-  class InstrJmp: public Instr {    
+  class InstrInc: public Instr {    
   public:
     virtual std::vector<Home> inputs() const;
     virtual std::vector<Home> outputs() const;
@@ -26,15 +26,12 @@ namespace Dyncprop {
 
     virtual const char* to_string() const;
 
-    virtual bool process(State& s) const;
-    
   public:
-    virtual ~InstrJmp();
-    InstrJmp(int32_t imm_, bool absolute_);
+    virtual ~InstrInc();
 
   private:
-    int32_t imm;
-    bool absolute;
+    InstrInc(Register opd_);
+    Register opd;
 
   public:
     static Instr* parse(const uint8_t* ip);

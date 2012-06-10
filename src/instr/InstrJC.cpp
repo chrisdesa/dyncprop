@@ -7,6 +7,7 @@
 #include "../Home.hpp"
 #include "../State.hpp"
 #include "InstrJC.hpp"
+#include "InstrJmp.hpp"
 
 namespace Dyncprop {
 
@@ -104,8 +105,44 @@ namespace Dyncprop {
     for(int i = 0; i < ins.size(); i++) {
       Data d = ins[i].get(s);
       if(!(d.isvirtual())) {
-        fprintf(stderr, "Error: Symbolic jumps not implemented yet (%s:%d).\n", __FILE__, __LINE__);
-        exit(1);
+        State* s_nottaken = s.clone();
+        State* s_taken = s.clone(); s_taken->ip += (int32_t)imm;
+        fprintf(stderr, "\033[33m[jump]   Processing not-taken branch.\033[0m\n");
+        while(s_nottaken->step() == 0);
+        fprintf(stderr, "\033[33m[jump]   Processing taken branch.\033[0m\n");
+        while(s_taken->step() == 0);
+        s.emitbuf.push_back(0x70+cond);
+        s.emitbuf.push_back(5);
+        s.emitbuf.push_back(0xE9);
+        int32_t jrv = s_taken->emitbuf.size();
+        s.emitbuf.push_back((uint8_t)jrv); jrv >>= 8;
+        s.emitbuf.push_back((uint8_t)jrv); jrv >>= 8;
+        s.emitbuf.push_back((uint8_t)jrv); jrv >>= 8;
+        s.emitbuf.push_back((uint8_t)jrv); jrv >>= 8;
+        for(int i = 0; i < s_taken->emitbuf.size(); i++) {
+          s.emitbuf.push_back(s_taken->emitbuf[i]);
+        }
+        for(int i = 0; i < s_nottaken->emitbuf.size(); i++) {
+          s.emitbuf.push_back(s_nottaken->emitbuf[i]);
+        }
+        delete s_nottaken;
+        delete s_taken;
+        fprintf(stderr, "\033[33m[jump]   Joined branches.\033[0m\n");
+        return true;
+        /*
+        s.realize_everything();
+        s.emitbuf.push_back(0x70 + cond);
+        s.emitbuf.push_back(6);
+        uint32_t target = (uint32_t)s.ip;
+        s.emitbuf.push_back(0x68);
+        s.emitbuf.push_back((uint8_t)target); target >>= 8;
+        s.emitbuf.push_back((uint8_t)target); target >>= 8;
+        s.emitbuf.push_back((uint8_t)target); target >>= 8;
+        s.emitbuf.push_back((uint8_t)target); target >>= 8;
+        s.emitbuf.push_back(0xC3);
+        s.ip += (int32_t)imm;
+        return false;
+        */        
       }
       infs.push_back(!!(d.value));
     }

@@ -41,6 +41,8 @@ namespace Dyncprop {
   public:
     State();
   public:
+    State* clone() const;
+  public:
     //data entries
     Data regs[REG_ENUM_MAX];
     Data flags[FLAG_ENUM_MAX];
@@ -54,6 +56,9 @@ namespace Dyncprop {
   public:
     //step the simulator
     bool step();
+  public:
+    //realize all the state
+    void realize_everything();
   public:
     //referencing the stack
     Data& stack_at(int32_t offset);

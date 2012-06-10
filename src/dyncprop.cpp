@@ -77,12 +77,6 @@ void* dyncprop(void* pfn, const char* format, ...)
   //which create two flows of execution
   while(s.step() == 0);
   
-  //assert that BP has been properly restored
-  if(s.regs[REG_EBP].state != DS_RET_BP) {
-    fprintf(stderr,"Error:  On function return, EBP is apparently not properly restored.\n");
-    exit(1);
-  }  
-  
   //allocate some memory for the function to be stored at
   uint32_t pagesize = sysconf(_SC_PAGE_SIZE);
   uint32_t npages = (s.emitbuf.size() + pagesize - 1) / pagesize;

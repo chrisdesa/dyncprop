@@ -8,7 +8,7 @@ INSTR_OBJS := $(patsubst src/instr/%.cpp,obj/instr/%.o,$(INSTR_CPPS))
 
 CLASS_HPPS := src/Instr.hpp src/Home.hpp src/Data.hpp src/State.hpp
 CLASS_OBJS := obj/Instr.o obj/Home.o obj/Data.o obj/State.o
-OBJS := obj/main.o obj/dyncprop.o $(CLASS_OBJS) $(INSTR_OBJS)
+OBJS := obj/main.o obj/fooO2.o obj/dyncprop.o $(CLASS_OBJS) $(INSTR_OBJS)
 
 all: bin obj obj/instr bin/main
 
@@ -29,6 +29,9 @@ bin/main: $(OBJS)
 
 obj/main.o: test/main.c src/dyncprop.h
 	gcc -c $(CFLAGS)  -I ./src/ $(LFLAGS) $< -o $@
+
+obj/fooO2.o: test/fooO2.c
+	gcc -O2 -c $(CFLAGS) $(LFLAGS) $< -o $@
 
 obj/dyncprop.o: src/dyncprop.cpp src/dyncprop.h $(CLASS_HPPS)
 	g++ -c $(CPPFLAGS) $(LFLAGS) $< -o $@

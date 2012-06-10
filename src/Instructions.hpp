@@ -12,3 +12,6 @@
 #include "instr/InstrJmp.hpp"
 #include "instr/InstrJC.hpp"
 #include "instr/InstrGroup5IncDec.hpp"
+#include "instr/InstrGroupC1.hpp"
+#include "instr/InstrGroupD1.hpp"
+#include "instr/InstrInc.hpp"
