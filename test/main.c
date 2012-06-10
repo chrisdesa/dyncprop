@@ -10,7 +10,7 @@ int main(int argc, char* argv[])
 {
   clock_t clk_start, clk_end; int i;
   float foo_time, bar_time;
-  const int niters = 100000000;
+  const int niters = 10000000;
   
   dyncprop_init();
   
@@ -57,9 +57,9 @@ int foo(int x, int y)
 {
   int z = 1;
   int r = 0;
-  for(register int i = 0; i < 24; i+=2) {
+  for(int i = 0; i < 77; i++) {
     z *= y;
-    r += x + z;
+    r += (x & i) + z;
   }
   return r & 255;
 }

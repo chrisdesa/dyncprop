@@ -62,10 +62,11 @@ namespace Dyncprop {
       writeimm32(ep, (uint32_t)(pcsr+i)); ep += 4;
     }
     //next, load the flags
-    *(ep++) = 0x8B; //MOV
+    *(ep++) = 0x8B; //MOV flags into EAX
     *(ep++) = (0 << 6) | (REG_EAX << 3) | (5);
     writeimm32(ep, (uint32_t)(&inoutf)); ep += 4;
-    *(ep++) = 0x9E; //store AH into flags
+    *(ep++) = 0x50; //push EAX
+    *(ep++) = 0x9D; //pop into flags
     //next, load all the registers
     for(int i = 0; i < 8; i++) {
       *(ep++) = 0x8B; //MOV
@@ -85,8 +86,13 @@ namespace Dyncprop {
       *(ep++) = (0 << 6) | (i << 3) | (5);
       writeimm32(ep, (uint32_t)(pinoutr+i)); ep += 4;
     }
+    //next, restore the original stack pointer, to use with flags
+    *(ep++) = 0x8B; //MOV
+    *(ep++) = (0 << 6) | (REG_ESP << 3) | (5);
+    writeimm32(ep, (uint32_t)(pcsr+REG_ESP)); ep += 4;
     //next, save the flags
-    *(ep++) = 0x9F; //load AH from flags
+    *(ep++) = 0x9C; //push from flags
+    *(ep++) = 0x58; //POP EAX
     *(ep++) = 0x89; //MOV
     *(ep++) = (0 << 6) | (REG_EAX << 3) | (5);
     writeimm32(ep, (uint32_t)(&inoutf)); ep += 4;
@@ -116,7 +122,7 @@ namespace Dyncprop {
         case Home::HM_FLAG:
           {
             fprintf(stderr, "[run]\t\t[%s=%s]\n", format_flag(in_homes[i].f), ins[i] ? "true" : "false");
-            uint32_t mask = 1 << (8 + in_homes[i].f);
+            uint32_t mask = 1 << (in_homes[i].f);
             if(ins[i]) {
               //set the flag
               inoutf = inoutf | mask;
@@ -145,7 +151,7 @@ namespace Dyncprop {
           break;
         case Home::HM_FLAG:
           {
-            uint32_t mask = 1 << (8 + out_homes[i].f);
+            uint32_t mask = 1 << (out_homes[i].f);
             uint32_t pval = !!(inoutf & mask);
             rv.push_back(pval);
             fprintf(stderr, "[run]\t\t{%s=%s}\n", format_flag(out_homes[i].f), pval ? "true" : "false");

@@ -11,3 +11,4 @@
 #include "instr/InstrMovImm.hpp"
 #include "instr/InstrJmp.hpp"
 #include "instr/InstrJC.hpp"
+#include "instr/InstrGroup5IncDec.hpp"
