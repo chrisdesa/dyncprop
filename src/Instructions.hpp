@@ -10,3 +10,4 @@
 #include "instr/InstrLeave.hpp"
 #include "instr/InstrMovImm.hpp"
 #include "instr/InstrJmp.hpp"
+#include "instr/InstrJC.hpp"

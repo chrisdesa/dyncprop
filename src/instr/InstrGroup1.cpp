@@ -93,7 +93,22 @@ namespace Dyncprop {
   
   std::vector<Data> InstrGroup1::emulate(std::vector<Data> ins) const
   {
-    return Instr::emulate(ins);
+    uint32_t opid = modrm.opd2_reg;
+    std::vector<Data> outs = Instr::emulate(ins);
+    switch(opid) {
+      case 0: //ADD
+        if(ins[0].state == DS_STACK_PTR) {
+          outs[0] = data(DS_STACK_PTR, ins[0].value + imm);
+        }
+        break;
+      case 5: //SUB
+        if(ins[0].state == DS_STACK_PTR) {
+          outs[0] = data(DS_STACK_PTR, ins[0].value - imm);
+        }
+        break;
+      //we could allow ADC and SBB, but that's probably overkill
+    }
+    return outs;
   }
   
   const Instr* InstrGroup1::canonicalize() const

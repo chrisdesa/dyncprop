@@ -21,14 +21,15 @@ namespace Dyncprop {
 
   std::vector<Home> InstrMovi::inputs() const
   {
-    fprintf(stderr, "Error: Not implemented yet (%s:%d).\n", __FILE__, __LINE__);
-    exit(1);
+    std::vector<Home> rv;
+    return rv;
   }
 
   std::vector<Home> InstrMovi::outputs() const
   {
-    fprintf(stderr, "Error: Not implemented yet (%s:%d).\n", __FILE__, __LINE__);
-    exit(1);
+    std::vector<Home> rv;
+    rv.push_back(Home::HomeRegister(r));
+    return rv;
   }
 
   std::vector<uint8_t> InstrMovi::opcode() const
