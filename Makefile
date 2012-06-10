@@ -1,5 +1,5 @@
 CFLAGS := -std=gnu99
-CPPFLAGS := -I ./src
+CPPFLAGS := -O2 -I ./src
 LFLAGS := -march=i386 -m32
 
 INSTR_CPPS := $(wildcard src/instr/*.cpp)

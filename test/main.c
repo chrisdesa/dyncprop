@@ -57,9 +57,9 @@ int foo(int x, int y)
 {
   int z = 1;
   int r = 0;
-  for(register int i = 0; i < 48; i+=2) {
+  for(register int i = 0; i < 24; i+=2) {
     z *= y;
-    r += x + y;
+    r += x + z;
   }
   return r & 255;
 }
