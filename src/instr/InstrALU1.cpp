@@ -6,6 +6,8 @@
 #include "../Home.hpp"
 #include "../State.hpp"
 #include "InstrALU1.hpp"
+#include "InstrGroup1.hpp"
+#include "InstrALU1AI.hpp"
 
 namespace Dyncprop {
 
@@ -103,6 +105,13 @@ namespace Dyncprop {
 
   const Instr* InstrALU1::cprop(Home input, Data value) const
   {
+    if(value.isvirtual()) {
+      if(input == modrm.opd_src()) {
+        std::vector<uint8_t> modrm_suffix = modrm.opcode_suffix();
+        modrm_suffix[0] = (modrm_suffix[0] & (~(7<<3))) | opid << 3;
+        return new InstrGroup1(modrm.w, &(modrm_suffix[0]), value.value);
+      }
+    }
     return NULL;
   }
   

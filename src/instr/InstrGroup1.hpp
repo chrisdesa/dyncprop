@@ -28,10 +28,10 @@ namespace Dyncprop {
 
   public:
     virtual ~InstrGroup1();
+    InstrGroup1(bool w, const uint8_t *ip, int32_t imm_);
 
   private:
     InstrGroup1(bool w, bool w_i_, const uint8_t *ip);
-    InstrGroup1(bool w, const uint8_t *ip, int32_t imm_);
     ModRM modrm;
     int32_t imm;
     
